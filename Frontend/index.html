@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alain Cloud Academy</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <header>
+    <div class="header-content">
+        <button id="sidebar-toggle-btn" class="fas fa-bars"></button>
+        <div class="header-title-section">
+            <img src="Alain.jpeg" alt="Logo de Alain Cloud Academy" class="logo">
+            <h1>Alain Cloud Academy</h1>
+        </div>
+    </div>
+    <div class="header-right">
+        <div id="cart-info">
+            <i class="fas fa-shopping-cart" id="cart-icon"></i>
+            <span id="cart-count">0</span>
+        </div>
+        <button id="login-btn">Iniciar Sesión</button>
+    </div>
+</header>
+
+    <div class="main-container sidebar-open">
+        <aside class="sidebar open">
+            <nav>
+                <h3>Plataformas</h3>
+                <ul>
+                    <li><a href="#" class="filter-link" data-platform="all">Todos los Cursos</a></li>
+                    <li><a href="#" class="filter-link" data-platform="aws">Amazon Web Services</a></li>
+                    <li><a href="#" class="filter-link" data-platform="azure">Azure</a></li>
+                    <li><a href="#" class="filter-link" data-platform="google">Google</a></li>
+                </ul>
+
+                <h3>Secciones</h3>
+                <ul>
+                    <li><a href="#testimonials-section">Testimonios de Clientes</a></li>
+                    <li><a href="#project-structure">Estructura del Proyecto</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            <section id="search-section">
+                <form id="search-form">
+                    <input type="text" id="search-input" placeholder="Buscar cursos...">
+                    <button type="submit">Buscar</button>
+                </form>
+            </section>
+            
+            <section id="course-catalog">
+                <h2>Catálogo de Cursos</h2>
+                <div id="courses-container">
+                    </div>
+            </section>
+    
+            <section id="cart-section" style="display: none;">
+                <h2>Mi Carrito</h2>
+                <div id="cart-items-container">
+                    </div>
+                <div id="cart-summary">
+                    <p>Total: $<span id="cart-total">0.00</span></p>
+                    <button id="checkout-btn">Simular Pago</button>
+                </div>
+            </section>
+
+    <footer>
+        <p>&copy; 2025 Alain Cloud Academy. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
