@@ -58,7 +58,7 @@ namespace AuthenticationService.Functions
                 var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.username = @username")
                     .WithParameter("@username", loginRequest.Username);
 
-                // Corregido: Especificación completa del tipo User
+                // Corregido: Especificación completa del tipo User//
                 AuthenticationService.Models.User? user = null;
                 using (var feedIterator = _container.GetItemQueryIterator<AuthenticationService.Models.User>(queryDefinition))
                 {
