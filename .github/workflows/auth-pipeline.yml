@@ -2,12 +2,12 @@ name: CI/CD - Authentication Service
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "microservices/AuthenticationService/**"
-      - "kubernetes/**"
-      - ".github/workflows/authentication-service.yml"
+    # branches:
+    #   - main
+    # paths:
+    #   - "microservices/AuthenticationService/**"
+    #   - "kubernetes/**"
+    #   - ".github/workflows/authentication-service.yml"
 
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
