@@ -7,6 +7,7 @@ on:
     paths:
       - 'microservices/reviewservice/**'
       - 'Kubernetes/**'
+
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
@@ -23,11 +24,14 @@ jobs:
     - name: Azure login
       uses: azure/login@v1
       with:
-        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENURE_ID }}"}'
+        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
 
     - name: Build and tag Docker image
       run: |
-        docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME }}/Dockerfile .
+        docker build \
+          -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          -f microservices/${{ env.SERVICE_NAME }}/Dockerfile \
+          microservices/${{ env.SERVICE_NAME }}
     
     - name: Docker login
       run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -38,7 +42,7 @@ jobs:
     - name: Set AKS credentials
       uses: azure/aks-set-context@v1
       with:
-        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENURE_ID }}"}'
+        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
         resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
         cluster-name: ${{ env.AKS_CLUSTER_NAME }}
     

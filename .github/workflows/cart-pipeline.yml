@@ -27,7 +27,10 @@ jobs:
 
     - name: Build and tag Docker image
       run: |
-        docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME }}/Dockerfile .
+        docker build \
+          -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          -f microservices/${{ env.SERVICE_NAME }}/Dockerfile \
+          microservices/${{ env.SERVICE_NAME }}
     
     - name: Docker login
       run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
