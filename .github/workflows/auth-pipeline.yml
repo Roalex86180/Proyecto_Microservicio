@@ -8,6 +8,7 @@ env:
   AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
   SERVICE_NAME: "AuthenticationService"
+  SERVICE_NAME_LOWER: "authenticationservice"
 
 jobs:
   build-and-deploy:
@@ -41,13 +42,13 @@ jobs:
       - name: Build and tag Docker image
         run: |
           cd ${{ github.workspace }}/microservices/${{ env.SERVICE_NAME }}
-          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME | toLowerCase }}:${{ github.sha }} -f Dockerfile .
+          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f Dockerfile .
 
       - name: Docker login
         run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Push Docker image to ACR
-        run: docker push ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME | toLowerCase }}:${{ github.sha }}
+        run: docker push ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }}
 
       - name: Set AKS credentials
         uses: azure/aks-set-context@v1
