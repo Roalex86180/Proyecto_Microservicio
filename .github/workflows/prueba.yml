@@ -1,14 +1,12 @@
-name: Prueba Activacion
+name: Test Workflow
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'microservices/authenticationservice/**'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Workflow activado correctamente"
+      - run: echo "Workflow activo!"
