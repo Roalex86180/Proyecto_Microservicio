@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: emailservice-service
 spec:
-  type: ClusterIP # IMPORTANTE: Expone el servicio solo internamente en el clúster.
+  type: ClusterIP # Expone el servicio solo internamente en el clúster.
   selector:
     app: emailservice
   ports:
