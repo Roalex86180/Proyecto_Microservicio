@@ -27,6 +27,6 @@ spec:
                 secretKeyRef:
                   name: cartservice-secrets
                   key: CosmosDbConnectionString
-            # IMPORTANTE: Corregimos la URL para que apunte al servicio de Kubernetes
+            # IMPORTANTE: Corregimos la URL para que apunte al servicio de Kubrnetes
             - name: CourseCatalogServiceUrl
               value: "http://coursecatalogservice-service"
