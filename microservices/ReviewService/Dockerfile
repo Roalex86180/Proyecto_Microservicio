@@ -19,7 +19,7 @@ RUN dotnet publish "reviewservice.csproj" -c Release -o /app/publish /p:UseAppHo
 
 # Stage 3: The final runtime image for Azure Functions
 # Utiliza la imagen del runtime de Azure Functions para .NET 8 aisladas (isolated)
-FROM mcr.microsoft.com/azure-functions/dotnet-isolated:8.0-alpine
+FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0
 WORKDIR /home/site/wwwroot
 # Establece las variables de entorno para el host de funciones
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
