@@ -8,5 +8,5 @@ spec:
     app: authenticationservice # Debe coincidir con el "label" del deploymnt
   ports:
     - protocol: TCP
-      port: 80 # El puerto del LoadBalancer
+      port: 80 
       targetPort: 80 # El puerto del contenedor que escucha el tráfico
