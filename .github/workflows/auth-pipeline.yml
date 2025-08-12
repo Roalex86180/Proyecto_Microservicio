@@ -9,7 +9,7 @@ on:
     paths:
       # El pipeline solo se ejecutará si hay cambios en esta carpeta
       - 'microservices/authenticationservice/**'
-      - 'Kubernetes/**'
+      - 'kubernetes/**'
 
 # Definición de variables de entorno globales
 env:

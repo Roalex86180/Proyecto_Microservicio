@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'microservices/coursecatalogservice/**'
-      - 'Kubernetes/**'
+      - 'kubernetes/**'
 
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
