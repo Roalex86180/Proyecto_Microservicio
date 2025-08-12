@@ -99,7 +99,7 @@ namespace CartService.Functions
                 var database = _cosmosClient.GetDatabase("CartDb");
                 var container = database.GetContainer("Items");
 
-                // Buscamos si el item ya existe para este usuario y producto
+                // Buscamos si el item ya existe para este usuario y product
                 var queryable = container.GetItemLinqQueryable<CartItem>();
                 using var existingItemQuery = queryable.Where(item => item.UserId == userId && item.ProductId == cartItemRequest.ProductId)
                                                        .Take(1)
