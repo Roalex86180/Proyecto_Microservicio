@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 # Copia el archivo csproj del servicio de autenticación
-COPY ["microservices/authenticationservice/authenticationservice.csproj", "microservices/authenticationservice/"]
+COPY microservices/authenticationservice/authenticationservice.csproj microservices/authenticationservice/authenticationservice.csproj
 
 # Restaura las dependencias del proyecto
 RUN dotnet restore "microservices/authenticationservice/authenticationservice.csproj"
