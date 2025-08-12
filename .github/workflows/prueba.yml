@@ -1,12 +1,22 @@
-name: Test Workflow
+name: Diagnóstico Dockerfile
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
-  test:
+  check-dockerfile:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Workflow activo!"
+      - uses: actions/checkout@v4
+
+      - name: List microservice folder
+        run: ls -la ./microservices/authenticationservice
+
+      - name: Check Dockerfile existence
+        run: |
+          if test -f ./microservices/authenticationservice/Dockerfile; then
+            echo "Dockerfile existe"
+            head -20 ./microservices/authenticationservice/Dockerfile
+          else
+            echo "Dockerfile NO existe"
+          fi
