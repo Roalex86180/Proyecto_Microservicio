@@ -1,62 +1,52 @@
-# Nombre del pipeline, visible en la interfaz de GitHub Actions
 name: CI/CD - Authentication Service
 
-# Eventos que disparan el pipeline
 on:
   push:
     branches:
       - main
     paths:
-      # El pipeline solo se ejecutará si hay cambios en esta carpeta
-      - 'microservices/authenticationservice/**'
-      - 'kubernetes/**'
+      - "microservices/authenticationservice/**"
+      - "kubernetes/**"
+      - ".github/workflows/authentication-service.yml"
 
-# Definición de variables de entorno globales
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
-  SERVICE_NAME: "authenticationservice" # Nombre del servicio para el tag de la imagen
+  SERVICE_NAME: "authenticationservice"
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    # Paso 1: Clonar el repositorio
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Paso 2: Iniciar sesión en Azure
     - name: Azure login
       uses: azure/login@v1
       with:
         creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
 
-    # Paso 3: Construir la imagen de Docker (corrigiendo ruta y contexto)
     - name: Build and tag Docker image
       run: |
         docker build \
           -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} \
           -f microservices/${{ env.SERVICE_NAME }}/Dockerfile \
           microservices/${{ env.SERVICE_NAME }}
-    
-    # Paso 4: Iniciar sesión en el Azure Container Registry (ACR)
+
     - name: Docker login
       run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
-      
-    # Paso 5: Subir la imagen al ACR
+
     - name: Push Docker image to ACR
       run: docker push ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
-    # Paso 6: Configurar las credenciales de kubectl para AKS
     - name: Set AKS credentials
       uses: azure/aks-set-context@v1
       with:
         creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
         resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
         cluster-name: ${{ env.AKS_CLUSTER_NAME }}
-    
-    # Paso 7: Desplegar en AKS
+
     - name: Deploy to AKS
       run: |
         kubectl apply -f ./kubernetes/authenticationservice-deployment.yaml

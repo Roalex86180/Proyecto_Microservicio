@@ -5,8 +5,9 @@ on:
     branches:
       - main
     paths:
-      - 'microservices/paymentservice/**'
-      - 'kubernetes/**'
+      - "microservices/paymentservice/**"
+      - "kubernetes/**"
+      - ".github/workflows/payment-service.yml"
 
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
@@ -18,35 +19,35 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Azure login
-      uses: azure/login@v1
-      with:
-        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
 
-    - name: Build and tag Docker image
-      run: |
-        docker build \
-          -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} \
-          -f microservices/${{ env.SERVICE_NAME }}/Dockerfile \
-          microservices/${{ env.SERVICE_NAME }}
-    
-    - name: Docker login
-      run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
-      
-    - name: Push Docker image to ACR
-      run: docker push ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }}
+      - name: Build and tag Docker image
+        run: |
+          docker build \
+            -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            -f microservices/${{ env.SERVICE_NAME }}/Dockerfile \
+            microservices/${{ env.SERVICE_NAME }}
 
-    - name: Set AKS credentials
-      uses: azure/aks-set-context@v1
-      with:
-        creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
-        resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
-        cluster-name: ${{ env.AKS_CLUSTER_NAME }}
-    
-    - name: Deploy to AKS
-      run: |
-        kubectl apply -f ./kubernetes/paymentservice-deployment.yaml
-        kubectl apply -f ./kubernetes/paymentservice-service.yaml
+      - name: Docker login
+        run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Push Docker image to ACR
+        run: docker push ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }}
+
+      - name: Set AKS credentials
+        uses: azure/aks-set-context@v1
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}", "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}", "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}", "tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+          resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f ./kubernetes/paymentservice-deployment.yaml
+          kubectl apply -f ./kubernetes/paymentservice-service.yaml
