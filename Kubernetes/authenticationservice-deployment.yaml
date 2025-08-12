@@ -26,7 +26,7 @@ spec:
               value: "AuthDb"
             - name: CosmosDbContainerName
               value: "Users"
-            - name: CosmosDbConnectionString # Se obtien del Secret
+            - name: CosmosDbConnectionString # Se obtiene del Secret
               valueFrom:
                 secretKeyRef:
                   name: authenticationservice-secrets
