@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: authenticationservice-service
 spec:
-  type: LoadBalancer # Asigna una IP pública para que el servicio sea accesible desde fuera del clúster
+  type: ClusterIP
   selector:
     app: authenticationservice # Debe coincidir con el "label" del deployment
   ports:

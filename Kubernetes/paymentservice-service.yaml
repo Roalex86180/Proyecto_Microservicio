@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: paymentservice-service
 spec:
-  type: LoadBalancer # Expone el servicio al exterior para poder procesar pagos
+  type: ClusterIP
   selector:
     app: paymentservice
   ports:

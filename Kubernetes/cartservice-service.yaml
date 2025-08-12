@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: cartservice-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: cartservice
   ports:

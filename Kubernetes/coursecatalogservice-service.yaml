@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: coursecatalogservice-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: coursecatalogservice
   ports:
