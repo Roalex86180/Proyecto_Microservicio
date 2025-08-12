@@ -2,6 +2,12 @@ name: CI/CD - Authentication Service
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - "microservices/AuthenticationService/**"
+      - "kubernetes/**"
+      - ".github/workflows/authentication-service.yml"
 
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
@@ -14,25 +20,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository (con submodules si hay)
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: List microservice folder files explicitly
-        run: |
-          echo "Listando archivos en la carpeta del microservicio:"
-          ls -la ${{ github.workspace }}/microservices/${{ env.SERVICE_NAME }}
-
-      - name: Confirm Dockerfile presence and show content
-        run: |
-          echo "Verificando existencia de Dockerfile:"
-          if test -f ${{ github.workspace }}/microservices/${{ env.SERVICE_NAME }}/Dockerfile; then
-            echo "Dockerfile existe:"
-            head -20 ${{ github.workspace }}/microservices/${{ env.SERVICE_NAME }}/Dockerfile
-          else
-            echo "Dockerfile NO existe"
-          fi
 
       - name: Azure login
         uses: azure/login@v1
@@ -41,8 +30,7 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          cd ${{ github.workspace }}/microservices/${{ env.SERVICE_NAME }}
-          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f Dockerfile .
+          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME }}/Dockerfile .
 
       - name: Docker login
         run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -59,5 +47,5 @@ jobs:
 
       - name: Deploy to AKS
         run: |
-          kubectl apply -f ./kubernetes/authenticationservice-deployment.yaml
-          kubectl apply -f ./kubernetes/authenticationservice-service.yaml
+          kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-deployment.yaml
+          kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-service.yaml
