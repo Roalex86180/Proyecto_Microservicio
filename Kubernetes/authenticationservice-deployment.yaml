@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authenticationservice-deployment
+  labels:
+    app: authenticationservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authenticationservice
+  template:
+    metadata:
+      labels:
+        app: authenticationservice
+    spec:
+      containers:
+        - name: authenticationservice
+          image: Containermicroservicio.azurecr.io/authenticationservice:{{.sha}}
+          ports:
+            - containerPort: 80
+          env:
+            - name: FUNCTIONS_WORKER_RUNTIME
+              value: "dotnet-isolated"
+            - name: CosmosDbDatabaseName
+              value: "AuthDb"
+            - name: CosmosDbContainerName
+              value: "Users"
+            - name: CosmosDbConnectionString # Se obtiene del Secret
+              valueFrom:
+                secretKeyRef:
+                  name: authenticationservice-secrets
+                  key: CosmosDbConnectionString
+            - name: JwtSecretKey # Se obtiene del Secret
+              valueFrom:
+                secretKeyRef:
+                  name: authenticationservice-secrets
+                  key: JwtSecretKey

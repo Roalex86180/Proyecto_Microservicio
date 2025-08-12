@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cartservice-deployment
+  labels:
+    app: cartservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      containers:
+        - name: cartservice
+          image: Containermicroservicio.azurecr.io/cartservice:{{.sha}}
+          ports:
+            - containerPort: 80
+          env:
+            - name: FUNCTIONS_WORKER_RUNTIME
+              value: "dotnet-isolated"
+            - name: CosmosDb__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: cartservice-secrets
+                  key: CosmosDbConnectionString
+            # IMPORTANTE: Corregimos la URL para que apunte al servicio de Kubernetes
+            - name: CourseCatalogServiceUrl
+              value: "http://coursecatalogservice-service"

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cartservice-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: cartservice
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

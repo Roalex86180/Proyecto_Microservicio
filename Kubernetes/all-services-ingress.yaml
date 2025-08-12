@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: all-services-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /authentication
+        pathType: Prefix
+        backend:
+          service:
+            name: authenticationservice-service
+            port:
+              number: 80
+      - path: /cart
+        pathType: Prefix
+        backend:
+          service:
+            name: cartservice-service
+            port:
+              number: 80
+      - path: /courses
+        pathType: Prefix
+        backend:
+          service:
+            name: coursecatalogservice-service
+            port:
+              number: 80
+      - path: /email
+        pathType: Prefix
+        backend:
+          service:
+            name: emailservice-service
+            port:
+              number: 80
+      - path: /payment
+        pathType: Prefix
+        backend:
+          service:
+            name: paymentservice-service
+            port:
+              number: 80
+      - path: /review
+        pathType: Prefix
+        backend:
+          service:
+            name: reviewservice-service
+            port:
+              number: 80

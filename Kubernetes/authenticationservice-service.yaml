@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: authenticationservice-service
+spec:
+  type: LoadBalancer # Asigna una IP pública para que el servicio sea accesible desde fuera del clúster
+  selector:
+    app: authenticationservice # Debe coincidir con el "label" del deployment
+  ports:
+    - protocol: TCP
+      port: 80 # El puerto del LoadBalancer
+      targetPort: 80 # El puerto del contenedor que escucha el tráfico
