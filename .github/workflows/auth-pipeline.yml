@@ -22,8 +22,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: List microservice folder
-        run: ls -l ./microservices/${{ env.SERVICE_NAME }}
+      - name: Inspect microservice folder deeply
+        run: |
+          ls -la ./microservices/${{ env.SERVICE_NAME }}
+          cat ./microservices/${{ env.SERVICE_NAME }}/Dockerfile || echo "Dockerfile no encontrado"
 
       - name: Azure login
         uses: azure/login@v1
@@ -32,7 +34,7 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME }}/Dockerfile ./microservices/${{ env.SERVICE_NAME }}
+          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME }}/Dockerfile .
 
       - name: Docker login
         run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
