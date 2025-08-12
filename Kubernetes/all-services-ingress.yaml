@@ -50,4 +50,4 @@ spec:
           service:
             name: reviewservice-service
             port:
-              number: 80
+              number: 80 # El puerto del contenedor que escucha el trafico
