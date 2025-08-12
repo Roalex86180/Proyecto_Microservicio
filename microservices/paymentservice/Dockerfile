@@ -8,7 +8,7 @@ COPY ["microservices/paymentservice/paymentservice.csproj", "microservices/payme
 RUN dotnet restore "microservices/paymentservice/paymentservice.csproj"
 # Copia todo el código fuente
 COPY . .
-# Navega al directorio del proyecto y compila en modo Release
+# Navega al directorio del proyecto y compila en modo Releas
 WORKDIR "/src/microservices/paymentservice"
 RUN dotnet build "paymentservice.csproj" -c Release -o /app/build
 

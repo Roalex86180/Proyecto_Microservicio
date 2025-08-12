@@ -13,7 +13,7 @@ WORKDIR "/src/microservices/reviewservice"
 RUN dotnet build "reviewservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application
-# Utiliza la etapa de compilación para publicar solo los archivos necesarios
+# Utiliza la etapa de compilación para publicar solo los archivos necesario
 FROM build AS publish
 RUN dotnet publish "reviewservice.csproj" -c Release -o /app/publish /p:UseAppHost=false
 

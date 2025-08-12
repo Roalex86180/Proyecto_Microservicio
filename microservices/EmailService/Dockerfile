@@ -17,7 +17,7 @@ RUN dotnet build "emailservice.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "emailservice.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Stage 3: The final runtime image for Azure Functions
+# Stage 3: The final runtime image for Azure Function
 # Utiliza la imagen del runtime de Azure Functions para .NET 8 aisladas (isolated)
 FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0 
 WORKDIR /home/site/wwwroot
