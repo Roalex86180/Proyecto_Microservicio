@@ -2,13 +2,13 @@ name: CI/CD - Authentication Service
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      # Las rutas deben coincidir con la convención de minúsculas
-      - "microservices/authenticationservice/**"
-      - "kubernetes/**"
-      - ".github/workflows/authentication-service.yml"
+    # branches:
+    #   - main
+    # paths:
+    #   # Las rutas deben coincidir con la convención de minúsculas
+    #   - "microservices/authenticationservice/**"
+    #   - "kubernetes/**"
+    #   - ".github/workflows/authentication-service.yml"
 
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
