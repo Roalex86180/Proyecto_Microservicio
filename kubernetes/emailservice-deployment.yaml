@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailservice-deployment
+  labels:
+    app: emailservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emailservice
+  template:
+    metadata:
+      labels:
+        app: emailservice
+    spec:
+      containers:
+        - name: emailservice
+          image: Containermicroservicio.azurecr.io/emailservice:{{.sha}}
+          ports:
+            - containerPort: 80
+          env:
+            - name: FUNCTIONS_WORKER_RUNTIME
+              value: "dotnet-isolated"
+            - name: AcsConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: emailservice-secrets
+                  key: AcsConnectionString
+            - name: AcsSenderEmail
+              valueFrom:
+                secretKeyRef:
+                  name: emailservice-secrets
+                  key: AcsSenderEmail
+            - name: AzureWebJobsStorage
+              valueFrom:
+                secretKeyRef:
+                  name: emailservice-secrets
+                  key: AzureWebJobsStorageConnectionString

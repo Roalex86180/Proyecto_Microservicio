@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailservice-service
+spec:
+  type: ClusterIP # Expone el servicio solo internamente en el cluster.
+  selector:
+    app: emailservice
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

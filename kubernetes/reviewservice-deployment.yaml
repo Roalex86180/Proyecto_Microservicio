@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviewservice-deployment
+  labels:
+    app: reviewservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reviewservice
+  template:
+    metadata:
+      labels:
+        app: reviewservice
+    spec:
+      containers:
+        - name: reviewservice
+          image: Containermicroservicio.azurecr.io/reviewservice:{{.sha}}
+          ports:
+            - containerPort: 80
+          env:
+            - name: FUNCTIONS_WORKER_RUNTIME
+              value: "dotnet-isolated"
+            - name: AzureBlobStorageContainerName
+              value: "videoreviews"
+            - name: CosmosDb__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: reviewservice-secrets
+                  key: CosmosDbConnectionString
+            - name: AzureBlobStorageConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: reviewservice-secrets
+                  key: AzureBlobStorageConnectionString
+            - name: CoursesDbConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: reviewservice-secrets
+                  key: CoursesDbConnectionString

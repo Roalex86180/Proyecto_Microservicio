@@ -2,12 +2,10 @@ name: CI/CD - Authentication Service
 
 on:
   push:
-    # branches:
-    #   - main
-    # paths:
-    #   - "microservices/AuthenticationService/**"
-    #   - "kubernetes/**"
-    #   - ".github/workflows/authentication-service.yml"
+    paths:
+      - "microservices/authenticationservice/**"  # Corregido: La ruta está descomentada y en minúsculas
+      - "kubernetes/**"
+      - ".github/workflows/authentication-service.yml"
 
 env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
@@ -30,7 +28,7 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME }}/Dockerfile .
+          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME_LOWER }}/Dockerfile . # Corregido: Se usa SERVICE_NAME_LOWER en la ruta
 
       - name: Docker login
         run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviewservice-service
+spec:
+  type: ClusterIP # Expone el servicio al exterior para manejar las rseñas
+  selector:
+    app: reviewservice
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

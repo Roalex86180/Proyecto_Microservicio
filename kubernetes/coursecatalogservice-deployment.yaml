@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coursecatalogservice-deployment
+  labels:
+    app: coursecatalogservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coursecatalogservice
+  template:
+    metadata:
+      labels:
+        app: coursecatalogservice
+    spec:
+      containers:
+        - name: coursecatalogservice
+          image: Containermicroservicio.azurecr.io/coursecatalogservice:{{.sha}}
+          ports:
+            - containerPort: 80
+          env:
+            - name: FUNCTIONS_WORKER_RUNTIME
+              value: "dotnet-isolated"
+            - name: CosmosDb__DatabaseName
+              value: "aca-db"
+            - name: CosmosDb__CollectionName
+              value: "courses"
+            - name: CosmosDb__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: coursecatalogservice-secrets
+                  key: CosmosDbConnectionString
