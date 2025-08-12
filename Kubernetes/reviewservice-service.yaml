@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: reviewservice-service
 spec:
-  type: ClusterIP # Expone el servicio al exterior para manejar las reseñas
+  type: ClusterIP # Expone el servicio al exterior para manejar las rseñas
   selector:
     app: reviewservice
   ports:
