@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "CourseCatalogService": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7185",
-      "launchBrowser": false
-    }
-  }
-}

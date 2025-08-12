@@ -1,0 +1,82 @@
+[
+  {
+    "name": "GetReviews",
+    "scriptFile": "ReviewService.dll",
+    "entryPoint": "ReviewService.Functions.GetReviews.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "get"
+        ],
+        "route": "reviews/{courseId}",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "SearchCourses",
+    "scriptFile": "ReviewService.dll",
+    "entryPoint": "ReviewService.Functions.SearchCourses.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "get"
+        ],
+        "route": "courses/search",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "SubmitReview",
+    "scriptFile": "ReviewService.dll",
+    "entryPoint": "ReviewService.Functions.SubmitReview.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "post"
+        ],
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  }
+]

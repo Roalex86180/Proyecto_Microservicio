@@ -1,0 +1,49 @@
+[
+  {
+    "name": "KeepAlive",
+    "scriptFile": "EmailService.dll",
+    "entryPoint": "EmailService.Functions.KeepAliveFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "get"
+        ],
+        "route": "keepalive",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "SendWelcomeEmail",
+    "scriptFile": "EmailService.dll",
+    "entryPoint": "EmailService.Functions.SendWelcomeEmail.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "myQueueItem",
+        "direction": "In",
+        "type": "queueTrigger",
+        "dataType": "String",
+        "queueName": "user-registrations",
+        "connection": "AzureWebJobsStorage",
+        "properties": {}
+      }
+    ]
+  }
+]

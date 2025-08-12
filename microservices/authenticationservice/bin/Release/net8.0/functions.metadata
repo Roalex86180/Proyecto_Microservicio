@@ -1,0 +1,109 @@
+[
+  {
+    "name": "Delete",
+    "scriptFile": "AuthenticationService.dll",
+    "entryPoint": "AuthenticationService.Functions.DeleteFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Function",
+        "methods": [
+          "delete"
+        ],
+        "route": "delete",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "Login",
+    "scriptFile": "AuthenticationService.dll",
+    "entryPoint": "AuthenticationService.Functions.LoginFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "post"
+        ],
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "Register",
+    "scriptFile": "AuthenticationService.dll",
+    "entryPoint": "AuthenticationService.Functions.RegisterFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "post"
+        ],
+        "route": "register",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "ValidateToken",
+    "scriptFile": "AuthenticationService.dll",
+    "entryPoint": "AuthenticationService.Functions.ValidateFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "get"
+        ],
+        "route": "validate",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  }
+]

@@ -1,0 +1,137 @@
+[
+  {
+    "name": "CreateCourse",
+    "scriptFile": "CourseCatalogService.dll",
+    "entryPoint": "CourseCatalogService.Functions.CreateCourse.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "post"
+        ],
+        "route": "courses",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "DeleteCourse",
+    "scriptFile": "CourseCatalogService.dll",
+    "entryPoint": "CourseCatalogService.Functions.DeleteCourse.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "delete"
+        ],
+        "route": "courses/{id}",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "GetCourseById",
+    "scriptFile": "CourseCatalogService.dll",
+    "entryPoint": "CourseCatalogService.Functions.GetCourseById.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "get"
+        ],
+        "route": "courses/{id}",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "GetCourses",
+    "scriptFile": "CourseCatalogService.dll",
+    "entryPoint": "CourseCatalogService.Functions.GetCourses.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "get"
+        ],
+        "route": "courses",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  },
+  {
+    "name": "UpdateCourse",
+    "scriptFile": "CourseCatalogService.dll",
+    "entryPoint": "CourseCatalogService.Functions.UpdateCourse.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "req",
+        "direction": "In",
+        "type": "httpTrigger",
+        "authLevel": "Anonymous",
+        "methods": [
+          "put"
+        ],
+        "route": "courses/{id}",
+        "properties": {}
+      },
+      {
+        "name": "$return",
+        "type": "http",
+        "direction": "Out"
+      }
+    ]
+  }
+]
