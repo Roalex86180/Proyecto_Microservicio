@@ -4,16 +4,15 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 # Copia el archivo csproj del servicio de autenticación
-COPY microservices/authenticationservice/authenticationservice.csproj microservices/authenticationservice/authenticationservice.csproj
+COPY authenticationservice.csproj .
 
 # Restaura las dependencias del proyecto
-RUN dotnet restore "microservices/authenticationservice/authenticationservice.csproj"
+RUN dotnet restore authenticationservice.csproj
 
 # Copia todo el código fuente
 COPY . .
 
-# Navega al directorio del proyecto y compila en modo Release
-WORKDIR "/src/microservices/authenticationservice"
+# Compila en modo Release
 RUN dotnet build "authenticationservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application

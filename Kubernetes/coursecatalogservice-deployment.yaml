@@ -14,9 +14,13 @@ spec:
       labels:
         app: coursecatalogservice
     spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      imagePullSecrets:
+      - name: acr-secret
       containers:
         - name: coursecatalogservice
-          image: Containermicroservicio.azurecr.io/coursecatalogservice:{{.sha}}
+          image: Containermicroservicio.azurecr.io/coursecatalogservice:vR
           ports:
             - containerPort: 80
           env:

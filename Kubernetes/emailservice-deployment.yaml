@@ -14,9 +14,13 @@ spec:
       labels:
         app: emailservice
     spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      imagePullSecrets:
+      - name: acr-secret
       containers:
         - name: emailservice
-          image: Containermicroservicio.azurecr.io/emailservice:{{.sha}}
+          image: Containermicroservicio.azurecr.io/emailservice:vR
           ports:
             - containerPort: 80
           env:

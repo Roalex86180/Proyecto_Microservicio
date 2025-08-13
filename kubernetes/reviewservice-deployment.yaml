@@ -14,9 +14,13 @@ spec:
       labels:
         app: reviewservice
     spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      imagePullSecrets:
+      - name: acr-secret
       containers:
         - name: reviewservice
-          image: Containermicroservicio.azurecr.io/reviewservice:{{.sha}}
+          image: Containermicroservicio.azurecr.io/reviewservice:vR
           ports:
             - containerPort: 80
           env:

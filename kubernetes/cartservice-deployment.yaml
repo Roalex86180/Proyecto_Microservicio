@@ -14,9 +14,13 @@ spec:
       labels:
         app: cartservice
     spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      imagePullSecrets:
+      - name: acr-secret
       containers:
         - name: cartservice
-          image: Containermicroservicio.azurecr.io/cartservice:{{.sha}}
+          image: Containermicroservicio.azurecr.io/cartservice:vR
           ports:
             - containerPort: 80
           env:
@@ -27,6 +31,5 @@ spec:
                 secretKeyRef:
                   name: cartservice-secrets
                   key: CosmosDbConnectionString
-            # IMPORTANTE: Corregimos la URL para que apunte al servicio de Kubernetes
             - name: CourseCatalogServiceUrl
               value: "http://coursecatalogservice-service"

@@ -14,9 +14,13 @@ spec:
       labels:
         app: paymentservice
     spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      imagePullSecrets:
+      - name: acr-secret
       containers:
         - name: paymentservice
-          image: Containermicroservicio.azurecr.io/paymentservice:{{.sha}}
+          image: Containermicroservicio.azurecr.io/paymentservice:vR
           ports:
             - containerPort: 80
           env:

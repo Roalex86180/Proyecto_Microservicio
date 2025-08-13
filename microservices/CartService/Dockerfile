@@ -4,16 +4,15 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 # Copia el archivo csproj del servicio de carrito
-COPY microservices/cartservice/cartservice.csproj microservices/cartservice/cartservice.csproj
+COPY cartservice.csproj .
 
 # Restaura las dependencias del proyecto
-RUN dotnet restore "microservices/cartservice/cartservice.csproj"
+RUN dotnet restore cartservice.csproj
 
 # Copia todo el código fuente
 COPY . .
 
 # Navega al directorio del proyecto y compila en modo Release
-WORKDIR "/src/microservices/cartservice"
 RUN dotnet build "cartservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application

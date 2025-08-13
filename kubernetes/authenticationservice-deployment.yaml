@@ -14,9 +14,13 @@ spec:
       labels:
         app: authenticationservice
     spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      imagePullSecrets:
+      - name: acr-secret
       containers:
         - name: authenticationservice
-          image: Containermicroservicio.azurecr.io/authenticationservice:{{.sha}}
+          image: Containermicroservicio.azurecr.io/authenticationservice:vR 
           ports:
             - containerPort: 80
           env:
@@ -26,12 +30,12 @@ spec:
               value: "AuthDb"
             - name: CosmosDbContainerName
               value: "Users"
-            - name: CosmosDbConnectionString # Se obtiene del Secret
+            - name: CosmosDbConnectionString
               valueFrom:
                 secretKeyRef:
                   name: authenticationservice-secrets
                   key: CosmosDbConnectionString
-            - name: JwtSecretKey # Se obtiene del Secret
+            - name: JwtSecretKey
               valueFrom:
                 secretKeyRef:
                   name: authenticationservice-secrets

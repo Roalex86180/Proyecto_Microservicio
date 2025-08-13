@@ -2,14 +2,17 @@
 # Utiliza la imagen del SDK de .NET 8 para compilar el proyecto
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
+
 # Copia el archivo csproj del servicio de correo electrónico
-COPY ["microservices/emailservice/emailservice.csproj", "microservices/emailservice/"]
+COPY emailservice.csproj .
+
 # Restaura las dependencias del proyecto
-RUN dotnet restore "microservices/emailservice/emailservice.csproj"
+RUN dotnet restore emailservice.csproj
+
 # Copia todo el código fuente
 COPY . .
-# Navega al directorio del proyecto y compila en modo Release
-WORKDIR "/src/microservices/emailservice"
+
+# Compila en modo Release
 RUN dotnet build "emailservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application
@@ -19,10 +22,12 @@ RUN dotnet publish "emailservice.csproj" -c Release -o /app/publish /p:UseAppHos
 
 # Stage 3: The final runtime image for Azure Function
 # Utiliza la imagen del runtime de Azure Functions para .NET 8 aisladas (isolated)
-FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0 
+FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0
 WORKDIR /home/site/wwwroot
+
 # Establece las variables de entorno para el host de funciones
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+
 # Copia los archivos publicados a la ubicación de ejecución
 COPY --from=publish /app/publish .

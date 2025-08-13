@@ -3,7 +3,7 @@ name: CI/CD - Authentication Service
 on:
   push:
     paths:
-      - "microservices/authenticationservice/**"  # Corregido: La ruta está descomentada y en minúsculas
+      - "microservices/authenticationservice/**"
       - "kubernetes/**"
       - ".github/workflows/authentication-service.yml"
 
@@ -28,7 +28,7 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME_LOWER }}/Dockerfile . # Corregido: Se usa SERVICE_NAME_LOWER en la ruta
+          docker build --platform linux/amd64 -t ${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }} -f ./microservices/${{ env.SERVICE_NAME_LOWER }}/Dockerfile ./microservices/${{ env.SERVICE_NAME_LOWER }}
 
       - name: Docker login
         run: docker login ${{ env.AZURE_ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -43,7 +43,11 @@ jobs:
           resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}
 
-      - name: Deploy to AKS
+      - name: Update deployment with new image
+        run: |
+          kubectl set image deployment/${{ env.SERVICE_NAME_LOWER }}-deployment ${{ env.SERVICE_NAME_LOWER }}=${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }}
+
+      - name: Deploy to AKS (if needed)
         run: |
           kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-deployment.yaml
           kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-service.yaml

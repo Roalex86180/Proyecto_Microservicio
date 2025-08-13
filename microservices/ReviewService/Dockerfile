@@ -4,16 +4,15 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 # Copia el archivo csproj del servicio de reseñas
-COPY microservices/reviewservice/reviewservice.csproj microservices/reviewservice/reviewservice.csproj
+COPY reviewservice.csproj .
 
 # Restaura las dependencias del proyecto
-RUN dotnet restore "microservices/reviewservice/reviewservice.csproj"
+RUN dotnet restore reviewservice.csproj
 
 # Copia todo el código fuente
 COPY . .
 
-# Navega al directorio del proyecto y compila en modo Release
-WORKDIR "/src/microservices/reviewservice"
+# Compila en modo Release
 RUN dotnet build "reviewservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application

@@ -4,16 +4,15 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 # Copia el archivo csproj del servicio de catálogo de cursos
-COPY microservices/coursecatalogservice/coursecatalogservice.csproj microservices/coursecatalogservice/coursecatalogservice.csproj
+COPY coursecatalogservice.csproj .
 
 # Restaura las dependencias del proyecto
-RUN dotnet restore "microservices/coursecatalogservice/coursecatalogservice.csproj"
+RUN dotnet restore coursecatalogservice.csproj
 
 # Copia todo el código fuente
 COPY . .
 
-# Navega al directorio del proyecto y compila en modo Release
-WORKDIR "/src/microservices/coursecatalogservice"
+# Compila en modo Release
 RUN dotnet build "coursecatalogservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application

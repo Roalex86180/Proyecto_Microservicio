@@ -2,14 +2,17 @@
 # Utiliza la imagen del SDK de .NET 8 para compilar el proyecto
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
+
 # Copia el archivo csproj del servicio de pago
-COPY ["microservices/paymentservice/paymentservice.csproj", "microservices/paymentservice/"]
+COPY paymentservice.csproj .
+
 # Restaura las dependencias del proyecto
-RUN dotnet restore "microservices/paymentservice/paymentservice.csproj"
+RUN dotnet restore paymentservice.csproj
+
 # Copia todo el código fuente
 COPY . .
-# Navega al directorio del proyecto y compila en modo Releas
-WORKDIR "/src/microservices/paymentservice"
+
+# Compila en modo Release
 RUN dotnet build "paymentservice.csproj" -c Release -o /app/build
 
 # Stage 2: Publish the application
@@ -21,8 +24,10 @@ RUN dotnet publish "paymentservice.csproj" -c Release -o /app/publish /p:UseAppH
 # Utiliza la imagen del runtime de Azure Functions para .NET 8 aisladas (isolated)
 FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0
 WORKDIR /home/site/wwwroot
+
 # Establece las variables de entorno para el host de funciones
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+
 # Copia los archivos publicados a la ubicación de ejecución
 COPY --from=publish /app/publish .
