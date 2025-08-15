@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Paquetes existentes -->
     <PackageReference Include="Azure.Storage.Queues" Version="12.23.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.52.1" />
@@ -25,19 +24,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.2" />
-
-    <!-- Paquetes para Application Insights -->
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.2.0" />
   </ItemGroup>
 
-  <!-- Incluye todos los archivos de código fuente, asegurando que todas las funciones se compilen -->
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Archivos de configuración -->
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
