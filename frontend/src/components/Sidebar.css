@@ -1,0 +1,60 @@
+/* src/components/Sidebar.css */
+.sidebar {
+  width: 250px;
+  background-color: #f4f4f4;
+  height: 100vh;
+  padding: 20px;
+  transition: width 0.3s ease;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  box-sizing: border-box; /* Esto es importante para que el padding no afecte el ancho total */
+  overflow-y: auto; /* Permite desplazamiento si la lista es muy larga */
+}
+
+.sidebar-hidden {
+  width: 60px;
+}
+
+.sidebar-toggle {
+  text-align: right;
+  font-size: 24px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  color: #343a40; /* Color del icono del menú */
+  padding-right: 10px;
+}
+
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-list li {
+  margin-bottom: 15px;
+}
+
+.sidebar-list a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #333;
+  text-decoration: none;
+  font-size: 1.1em;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-list a:hover {
+  background-color: #ddd;
+}
+
+.sidebar-list .icon {
+  font-size: 1.4em;
+  min-width: 25px;
+  text-align: center;
+}
+
+.sidebar-hidden .sidebar-list a .name {
+  display: none;
+}

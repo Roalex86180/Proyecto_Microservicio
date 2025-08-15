@@ -1,0 +1,48 @@
+/* src/components/SearchBar.css */
+.search-bar-container {
+  display: flex;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.search-input {
+  flex-grow: 1;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.search-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.2s ease; /* Transición suave para todos los efectos */
+}
+
+/* Efecto hover - cuando pasas el mouse por encima */
+.search-button:hover {
+  background-color: #0056b3; /* Azul más oscuro */
+  transform: translateY(-1px); /* Se eleva ligeramente */
+}
+
+/* Efecto active - cuando se presiona el botón */
+.search-button:active {
+  background-color: #004085; /* Azul aún más oscuro */
+  transform: translateY(0px) scale(0.98); /* Vuelve a su posición y se encoge un poquito */
+}
+
+/* Efecto focus para accesibilidad (cuando se navega con teclado) */
+.search-button:focus {
+  outline: 2px solid #80bdff;
+  outline-offset: 1px;
+}

@@ -4,7 +4,7 @@ metadata:
   name: agic-cluster-role
 rules:
   - apiGroups: ["", "networking.k8s.io", "extensions"]
-    resources: ["ingresses", "endpoints", "services", "pods", "secrets", "ingressclasses"] # Corregido: se agregó "ingressclasses"
+    resources: ["ingresses", "endpoints", "services", "pods", "secrets", "nodes", "ingressclasses"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["appgw.ingress.azure.io"]
     resources: ["azureapplicationgatewayrewrites"]
@@ -16,7 +16,7 @@ metadata:
   name: agic-cluster-role-binding
 subjects:
   - kind: ServiceAccount
-    name: agic-workload-identity-sa
+    name: agic-ingress-azure  # <-- Corregido para que coincida con el nombre de tu ServiceAccount
     namespace: kube-system
 roleRef:
   kind: ClusterRole

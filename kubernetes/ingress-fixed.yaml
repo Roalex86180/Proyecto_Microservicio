@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: all-services-ingress
+  namespace: default
+  labels:
+    force-update: "true"
+  annotations:
+    kubernetes.io/ingress.class: azure-application-gateway
+    appgw.ingress.kubernetes.io/backend-protocol: http
+    appgw.ingress.kubernetes.io/use-private-ip: "false"
+    appgw.ingress.kubernetes.io/ssl-redirect: "false"
+    appgw.ingress.kubernetes.io/connection-draining: "true"
+    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+    appgw.ingress.kubernetes.io/request-timeout: "30"
+    appgw.ingress.kubernetes.io/backend-path-prefix: ""
+    # Especificar explícitamente el Application Gateway
+    appgw.ingress.kubernetes.io/appgw-name: "my-app-gateway"
+    appgw.ingress.kubernetes.io/resource-group: "MC_mi-proyecto-azure-centralus_Aksmicroservicio_centralus"
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+  - http:
+      paths:
+      - path: /authentication/*
+        pathType: Prefix
+        backend:
+          service:
+            name: authenticationservice-service
+            port:
+              number: 80
+      - path: /cart/*
+        pathType: Prefix
+        backend:
+          service:
+            name: cartservice-service
+            port:
+              number: 80
+      - path: /coursecatalog/*
+        pathType: Prefix
+        backend:
+          service:
+            name: coursecatalogservice-service
+            port:
+              number: 80
+      - path: /email/*
+        pathType: Prefix
+        backend:
+          service:
+            name: emailservice-service
+            port:
+              number: 80
+      - path: /payment/*
+        pathType: Prefix
+        backend:
+          service:
+            name: paymentservice-service
+            port:
+              number: 80
+      - path: /review/*
+        pathType: Prefix
+        backend:
+          service:
+            name: reviewservice-service
+            port:
+              number: 80
