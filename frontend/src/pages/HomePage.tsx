@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { type Course } from '../types/Course';
-import { getCourses, addCourseToCart } from '../api/api';
+import { getCourses } from '../api/api';
 import Sidebar from '../components/Sidebar';
 import SearchBar from '../components/SearchBar';
 import CourseActionModal from '../components/CourseActionModal';
@@ -11,12 +11,13 @@ import awsIcon from '../assets/images/aws-icon.png';
 import azureIcon from '../assets/images/azure-icon.png';
 import googleIcon from '../assets/images/google-icon.png';
 
-// [MODIFICADO] La prop ahora recibe el objeto Course
+// [CORRECCIÓN] La interfaz de propiedades ahora recibe el userId y el tipo de la función onAddToCart es correcto
 interface HomePageProps {
-  onItemAddedToCart: (course: Course) => void;
+  onItemAddedToCart: (course: Course) => Promise<void>;
+  userId: string | null;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart }) => {
+const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId }) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,24 +63,17 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart }) => {
     setSelectedCourse(null);
   };
 
-  const addToCart = async (courseId: string) => {
-    const userId = '12345';
-    try {
-      await addCourseToCart(userId, courseId);
-      
-      // [MODIFICADO] Ahora pasamos el objeto 'selectedCourse'
-      if (selectedCourse) {
-        onItemAddedToCart(selectedCourse);
-      }
-
+  // [NUEVO] Lógica para manejar el "Añadir al carrito" con la validación de autenticación
+  const handleAddToCart = async () => {
+    if (!userId) {
+      alert('Debes iniciar sesión para añadir cursos al carrito.');
+      return;
+    }
+    
+    if (selectedCourse) {
+      await onItemAddedToCart(selectedCourse);
       alert('¡Curso añadido al carrito!');
-    } catch (err: any) {
-      if (err.status === 409) {
-        alert('¡Este curso ya se encuentra en tu carrito!');
-      } else {
-        alert('Error al añadir el curso al carrito.');
-        console.error(err);
-      }
+      handleCloseModal();
     }
   };
 
@@ -124,7 +118,7 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart }) => {
         <CourseActionModal
           course={selectedCourse}
           onClose={handleCloseModal}
-          onAddToCart={() => addToCart(selectedCourse.Id)} 
+          onAddToCart={handleAddToCart}
         />
       )}
     </div>
