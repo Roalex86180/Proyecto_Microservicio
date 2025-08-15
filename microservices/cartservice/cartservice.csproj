@@ -23,4 +23,8 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <!-- Incluye automáticamente todas las funciones en la carpeta functions -->
+    <Compile Include="functions\**\*.cs" />
+  </ItemGroup>
 </Project>
