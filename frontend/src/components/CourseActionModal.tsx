@@ -7,29 +7,38 @@ import './CourseActionModal.css';
 interface CourseActionModalProps {
   course: Course;
   onClose: () => void;
-  onAddToCart: () => Promise<void>; 
+  onAddToCart: () => Promise<void>;
   userId: string | null;
-  // [CAMBIO] La función de pago ahora puede recibir un courseId opcional
   onProcessPayment: (userId: string, courseId?: string) => Promise<PaymentResult>;
 }
 
-const CourseActionModal: React.FC<CourseActionModalProps> = ({ 
-  course, 
-  onClose, 
-  onAddToCart, 
+const CourseActionModal: React.FC<CourseActionModalProps> = ({
+  course,
+  onClose,
+  onAddToCart,
   userId,
   onProcessPayment
 }) => {
   const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [actionStatus, setActionStatus] = useState<string | null>(null);
 
   const handleAddToCart = async () => {
     if (!userId) {
       alert("Debes iniciar sesión para añadir cursos al carrito.");
       return;
     }
-    await onAddToCart();
-    onClose();
+    setLoading(true);
+    try {
+      await onAddToCart();
+      setActionStatus("✅ Su curso fue añadido.");
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (error) {
+      setActionStatus("Error al añadir el curso.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePayNow = async () => {
@@ -37,20 +46,26 @@ const CourseActionModal: React.FC<CourseActionModalProps> = ({
       alert("Debes iniciar sesión para procesar el pago.");
       return;
     }
-    
+
     setLoading(true);
-    setPaymentStatus(null);
+    setActionStatus(null);
     try {
       console.log(`Procediendo a pagar ${course.Name}...`);
-      // [CAMBIO] Se llama a onProcessPayment con el userId y el course.Id
       const result = await onProcessPayment(userId, course.Id);
-      setPaymentStatus(result.message);
-      // Opcional: cierra el modal si el pago es exitoso
+
       if (result.message.includes('successfully')) {
+        setActionStatus('✅ Su pago fue exitoso.');
+      } else {
+        setActionStatus(result.message);
+      }
+
+      if (result.message.includes('successfully')) {
+        setTimeout(() => {
           onClose();
+        }, 3000);
       }
     } catch (error) {
-      setPaymentStatus('Error al procesar el pago. Por favor, inténtelo de nuevo.');
+      setActionStatus('Error al procesar el pago. Por favor, inténtelo de nuevo.');
       console.error(error);
     } finally {
       setLoading(false);
@@ -66,21 +81,21 @@ const CourseActionModal: React.FC<CourseActionModalProps> = ({
         <h2 className="modal-title">{course.Name}</h2>
         <p className="modal-description">{course.Description}</p>
         <p className="modal-price">Precio: ${course.Price}</p>
-        
-        {paymentStatus && (
-          <div style={{ marginTop: '20px', color: paymentStatus.includes('Error') ? 'red' : 'green' }}>
-            {paymentStatus}
+
+        {actionStatus ? (
+          <div style={{ marginTop: '20px', color: actionStatus.includes('Error') ? 'red' : 'green' }}>
+            {actionStatus}
+          </div>
+        ) : (
+          <div className="modal-buttons">
+            <button className="add-to-cart-button" onClick={handleAddToCart} disabled={loading}>
+              Añadir al Carro
+            </button>
+            <button className="pay-now-button" onClick={handlePayNow} disabled={loading}>
+              {loading ? 'Procesando...' : 'Pagar Ahora'}
+            </button>
           </div>
         )}
-
-        <div className="modal-buttons">
-          <button className="add-to-cart-button" onClick={handleAddToCart} disabled={loading}>
-            Añadir al Carro
-          </button>
-          <button className="pay-now-button" onClick={handlePayNow} disabled={loading}>
-            {loading ? 'Procesando...' : 'Pagar Ahora'}
-          </button>
-        </div>
       </div>
     </div>
   );

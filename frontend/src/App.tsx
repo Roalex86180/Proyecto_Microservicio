@@ -18,6 +18,8 @@ function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  // Estado para el mensaje de pago
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCart = async (currentUserId: string) => {
@@ -58,23 +60,34 @@ function App() {
     }
   };
 
-  // [CAMBIO] La función ahora recibe un courseId opcional
+  // Función para vaciar el carrito (la usará CartPage tras mostrar el mensaje)
+  const clearCart = () => setCartItems([]);
+
+  // Procesa el pago y muestra el mensaje del backend sin vaciar inmediatamente el carrito
   const handlePayment = async (currentUserId: string, courseId?: string): Promise<PaymentResult> => {
     if (!currentUserId) {
       alert("Debes iniciar sesión para procesar el pago.");
       return { message: "Error: No se ha iniciado sesión." };
     }
     try {
-      // [CAMBIO] Se pasa el courseId a la función processPayment si existe
       const result = await processPayment(currentUserId, courseId);
-      console.log('Pago procesado:', result.message);
-      // Solo limpia el carrito si no se realizó un pago de un solo curso
-      if (!courseId) {
-        setCartItems([]);
-      }
+      const msg = String(result?.message ?? "");
+      console.log('Pago procesado:', msg);
+
+      // Mostrar SIEMPRE el mensaje del backend (incluye "successfully")
+      setPaymentMessage(msg);
+
+      // Ocultar el mensaje después de 3 segundos
+      setTimeout(() => {
+        setPaymentMessage(null);
+      }, 3000);
+
+      // Nota: NO vaciamos aquí el carrito.
+      // CartPage lo vaciará tras 2.5s si detecta éxito, usando onClearCart.
       return result;
     } catch (error) {
       console.error('Error al procesar el pago:', error);
+      setPaymentMessage("Error al procesar el pago. Por favor, inténtelo de nuevo.");
       return { message: "Error al procesar el pago. Por favor, inténtelo de nuevo." };
     }
   };
@@ -120,6 +133,7 @@ function App() {
   const handleLogout = () => {
     setUserId(null);
     setUserName(null);
+    setCartItems([]);
     console.log("Usuario ha cerrado sesión.");
   };
 
@@ -146,7 +160,18 @@ function App() {
             path="/"
             element={<HomePage onItemAddedToCart={handleItemAdded} userId={userId} onProcessPayment={handlePayment} />}
           />
-          <Route path="/cart" element={<CartPage cartItems={cartItems} userId={userId} onProcessPayment={handlePayment} />} />
+          <Route
+            path="/cart"
+            element={
+              <CartPage
+                cartItems={cartItems}
+                userId={userId}
+                onProcessPayment={handlePayment}
+                paymentMessage={paymentMessage}
+                onClearCart={clearCart}   // ← permite vaciar el carrito tras mostrar el mensaje
+              />
+            }
+          />
         </Routes>
       </div>
       <Footer />

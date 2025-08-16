@@ -146,7 +146,7 @@ namespace PaymentService.Functions
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
                     await successResponse.WriteAsJsonAsync(new
                     {
-                        message = $"Payment processed successfully. {cartItems.Count} items removed from cart."
+                        message = $"Pago realizado con éxito. {cartItems.Count} ítem{(cartItems.Count > 1 ? "s" : "")} eliminad{(cartItems.Count > 1 ? "os" : "o")} del carrito."
                     });
                     return successResponse;
                 }
