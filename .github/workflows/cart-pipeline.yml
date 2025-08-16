@@ -3,7 +3,7 @@ name: CI/CD - Cart Service
 on:
   push:
     branches:
-      - main
+      - frontend-working
     paths:
       - "microservices/cartservice/**"
       - "kubernetes/**"
