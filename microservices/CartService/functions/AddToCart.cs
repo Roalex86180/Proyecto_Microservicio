@@ -29,7 +29,7 @@ namespace CartService.Functions
 
         [Function("AddToCart")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "cart/add")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "add")] HttpRequestData req)
         {
             _logger.LogInformation("Add to cart request received.");
 
