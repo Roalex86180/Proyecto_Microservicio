@@ -27,7 +27,7 @@ namespace CartService.Functions
 
         [Function("GetCartByUser")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{userId}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "cart/{userId}")] HttpRequestData req,
             string userId)
         {
             _logger.LogInformation($"Get cart request received for user ID: {userId}");

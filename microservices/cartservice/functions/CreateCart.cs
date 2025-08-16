@@ -20,7 +20,7 @@ namespace CartService.Functions
 
         [Function("CreateCart")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "create")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "cart/create")] HttpRequestData req)
         {
             _logger.LogInformation("Create cart request received.");
 
