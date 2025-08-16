@@ -20,7 +20,7 @@ spec:
       - name: acr-secret
       containers:
         - name: cartservice
-          image: Containermicroservicio.azurecr.io/cartservice:vR
+          image: Containermicroservicio.azurecr.io/cartservice:${IMAGE_TAG}
           ports:
             - containerPort: 80
           env:
