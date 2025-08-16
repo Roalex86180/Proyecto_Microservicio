@@ -40,3 +40,9 @@ spec:
                 secretKeyRef:
                   name: authenticationservice-secrets
                   key: JwtSecretKey
+            # [NUEVO] Agregamos la cadena de conexión de Azure Storage
+            - name: "AzureWebJobsStorage"
+              valueFrom:
+                secretKeyRef:
+                  name: authenticationservice-secrets
+                  key: AzureWebJobsStorage

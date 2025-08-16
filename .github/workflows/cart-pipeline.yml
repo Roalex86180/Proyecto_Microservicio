@@ -47,9 +47,11 @@ jobs:
 
     - name: Update deployment with new image
       run: |
+        # Este comando actualiza el deployment a la última imagen construida.
         kubectl set image deployment/${{ env.SERVICE_NAME_LOWER }}-deployment ${{ env.SERVICE_NAME_LOWER }}=${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }}
 
-    - name: Deploy to AKS (if needed)
-      run: |
-        kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-deployment.yaml
-        kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-service.yaml
+    # [ELIMINADO] Este paso ya no es necesario, ya que el paso anterior actualiza la imagen dinámicamente.
+    # - name: Deploy to AKS (if needed)
+    #   run: |
+    #     kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-deployment.yaml
+    #     kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-service.yaml

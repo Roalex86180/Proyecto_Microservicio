@@ -46,3 +46,31 @@
 .user-actions span:hover {
   color: #007bff; /* Un color de acento azul para el hover */
 }
+
+/* Estilos nuevos agregados */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.username {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.auth-button button {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.auth-button button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
