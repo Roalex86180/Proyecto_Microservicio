@@ -9,4 +9,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80 
-      targetPort: 80 # El puerto del contenedor que escucha el trafico
+      targetPort: 80 # El puerto del contnedor que escucha el trafico
