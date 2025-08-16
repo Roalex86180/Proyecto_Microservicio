@@ -1,3 +1,5 @@
+// src/PaymentService/Functions/ProcessPayment.cs
+
 using System;
 using System.Net;
 using System.Text.Json;
@@ -69,57 +71,85 @@ namespace PaymentService.Functions
                 var database = _cosmosClient.GetDatabase("CartDb");
                 var container = database.GetContainer("Items");
 
-                // 1. Obtener todos los ítems del carrito del usuario usando la clave de partición
-                _logger.LogInformation($"Searching for cart items for UserId: {paymentRequest.UserId}");
-
-                var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
-                    .WithParameter("@userId", paymentRequest.UserId);
-                
-                var cartItems = new List<CartItem>();
-                using (var feedIterator = container.GetItemQueryIterator<CartItem>(queryDefinition, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) }))
+                // [NUEVA LÓGICA] Si hay un CourseId en la solicitud, procesa solo ese curso
+                if (!string.IsNullOrEmpty(paymentRequest.CourseId))
                 {
-                    while (feedIterator.HasMoreResults)
+                    _logger.LogInformation($"Processing single course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
+                    
+                    // Simular el pago del curso único
+                    // NOTA: Aquí puedes agregar lógica para verificar si el curso existe y pertenece al usuario.
+                    
+                    // Lógica para eliminar el curso del carrito si existe
+                    var querySingleItem = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId AND c.courseId = @courseId")
+                        .WithParameter("@userId", paymentRequest.UserId)
+                        .WithParameter("@courseId", paymentRequest.CourseId);
+
+                    var singleItem = (await container.GetItemQueryIterator<CartItem>(querySingleItem, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) })
+                                    .ReadNextAsync()).FirstOrDefault();
+                    
+                    if (singleItem != null)
                     {
-                        var response = await feedIterator.ReadNextAsync();
-                        cartItems.AddRange(response);
+                        await container.DeleteItemAsync<CartItem>(singleItem.Id, new PartitionKey(paymentRequest.UserId));
                     }
+
+                    var successResponse = req.CreateResponse(HttpStatusCode.OK);
+                    await successResponse.WriteAsJsonAsync(new
+                    {
+                        message = $"Payment for course '{paymentRequest.CourseId}' processed successfully."
+                    });
+                    return successResponse;
                 }
-
-                if (cartItems.Count == 0)
+                else // Lógica existente para procesar el carrito completo
                 {
-                    var response = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await response.WriteStringAsync($"Cart for user '{paymentRequest.UserId}' is empty. No payment to process.");
-                    return response;
+                    _logger.LogInformation($"Searching for cart items for UserId: {paymentRequest.UserId}");
+
+                    var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
+                        .WithParameter("@userId", paymentRequest.UserId);
+                    
+                    var cartItems = new List<CartItem>();
+                    using (var feedIterator = container.GetItemQueryIterator<CartItem>(queryDefinition, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) }))
+                    {
+                        while (feedIterator.HasMoreResults)
+                        {
+                            var response = await feedIterator.ReadNextAsync();
+                            cartItems.AddRange(response);
+                        }
+                    }
+
+                    if (cartItems.Count == 0)
+                    {
+                        var response = req.CreateResponse(HttpStatusCode.BadRequest);
+                        await response.WriteStringAsync($"Cart for user '{paymentRequest.UserId}' is empty. No payment to process.");
+                        return response;
+                    }
+
+                    _logger.LogInformation($"Simulating payment for user '{paymentRequest.UserId}' with {cartItems.Count} items.");
+                    
+                    var batch = container.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
+                    foreach (var item in cartItems)
+                    {
+                        batch.DeleteItem(item.Id);
+                    }
+
+                    var batchResponse = await batch.ExecuteAsync();
+
+                    if (!batchResponse.IsSuccessStatusCode)
+                    {
+                        _logger.LogError($"Transactional batch failed with status code: {batchResponse.StatusCode}");
+                        var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                        await errorResponse.WriteStringAsync("Payment processed, but failed to clear cart. Please contact support.");
+                        return errorResponse;
+                    }
+
+                    _logger.LogInformation($"Successfully processed payment and cleared cart for user '{paymentRequest.UserId}'.");
+
+                    var successResponse = req.CreateResponse(HttpStatusCode.OK);
+                    await successResponse.WriteAsJsonAsync(new
+                    {
+                        message = $"Payment processed successfully. {cartItems.Count} items removed from cart."
+                    });
+                    return successResponse;
                 }
-
-                // 2. Simular el pago
-                _logger.LogInformation($"Simulating payment for user '{paymentRequest.UserId}' with {cartItems.Count} items.");
-                
-                // 3. Eliminar los ítems del carrito usando un lote transaccional
-                var batch = container.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
-                foreach (var item in cartItems)
-                {
-                    batch.DeleteItem(item.Id);
-                }
-
-                var batchResponse = await batch.ExecuteAsync();
-
-                if (!batchResponse.IsSuccessStatusCode)
-                {
-                    _logger.LogError($"Transactional batch failed with status code: {batchResponse.StatusCode}");
-                    var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                    await errorResponse.WriteStringAsync("Payment processed, but failed to clear cart. Please contact support.");
-                    return errorResponse;
-                }
-
-                _logger.LogInformation($"Successfully processed payment and cleared cart for user '{paymentRequest.UserId}'.");
-
-                var successResponse = req.CreateResponse(HttpStatusCode.OK);
-                await successResponse.WriteAsJsonAsync(new
-                {
-                    message = $"Payment processed successfully. {cartItems.Count} items removed from cart."
-                });
-                return successResponse;
             }
             catch (Exception ex)
             {

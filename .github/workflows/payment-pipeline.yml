@@ -52,7 +52,7 @@ jobs:
       run: |
         kubectl set image deployment/${{ env.SERVICE_NAME_LOWER }}-deployment ${{ env.SERVICE_NAME_LOWER }}=${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }}
 
-    - name: Deploy to AKS (if needed)
+    - name: Deploy AKS service (if needed)
       run: |
-        kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-deployment.yaml
+        # Ya no necesitamos aplicar el despliegue, solo el servicio
         kubectl apply -f ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-service.yaml
