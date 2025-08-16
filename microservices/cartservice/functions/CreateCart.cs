@@ -45,10 +45,15 @@ namespace CartService.Functions
                 return errorResponse;
             }
 
-            // Simplemente devuelve una respuesta de éxito
-            // La lógica de añadir el primer ítem se manejará en la función AddToCart
+            // Crea un objeto para la respuesta JSON
+            var responseBody = new
+            {
+                message = "Cart created successfully."
+            };
+
+            // Crea una respuesta HTTP 201 y escribe el objeto JSON en el cuerpo
             var response = req.CreateResponse(HttpStatusCode.Created);
-            await response.WriteStringAsync("Cart endpoint is working. Ready to add items.");
+            await response.WriteAsJsonAsync(responseBody);
             return response;
         }
     }
