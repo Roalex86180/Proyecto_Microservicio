@@ -77,6 +77,33 @@ export const getCartItems = async (userId: string) => {
   }
 };
 
+// [NUEVO] Función para crear un carrito si no existe
+export const createCart = async (userId: string) => {
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY,
+    },
+    body: JSON.stringify({ userId }),
+  };
+
+  try {
+    const response = await fetch(`${API_MANAGEMENT_URL}/create`, requestOptions);
+    if (!response.ok) {
+      const error = new Error(`Error: ${response.status} ${response.statusText}`);
+      (error as any).status = response.status;
+      throw error;
+    }
+    const result = await response.json();
+    console.log("Nuevo carrito creado:", result);
+    return result;
+  } catch (error) {
+    console.error('Error al crear el carrito:', error);
+    throw error;
+  }
+};
+
 // URL para el servicio de autenticación
 const AUTHENTICATION_API_URL = 'https://miapimanagement1.azure-api.net/authentication';
 
@@ -85,13 +112,12 @@ export const login = async (username: string, password: string) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY, // ✅ Corregido: usar header en lugar de query parameter
+            'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY,
         },
         body: JSON.stringify({ username, password }),
     };
 
     try {
-        // ✅ Corregido: URL sin query parameter
         const response = await fetch(`${AUTHENTICATION_API_URL}/login`, requestOptions);
         if (!response.ok) {
             const error = new Error(`Error: ${response.status} ${response.statusText}`);
@@ -111,13 +137,12 @@ export const register = async (username: string, password: string, email: string
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY, // ✅ Corregido: usar header en lugar de query parameter
+            'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY,
         },
         body: JSON.stringify({ username, password, email }),
     };
 
     try {
-        // ✅ Corregido: URL sin query parameter
         const response = await fetch(`${AUTHENTICATION_API_URL}/register`, requestOptions);
         if (!response.ok) {
             const error = new Error(`Error: ${response.status} ${response.statusText}`);

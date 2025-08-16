@@ -8,7 +8,8 @@ import CartPage from './pages/CartPage';
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal'; 
 import { type Course } from './types/Course'; 
-import { getCartItems, addCourseToCart, login, register } from './api/api'; 
+// [CAMBIO] Importamos la nueva función 'createCart'
+import { getCartItems, addCourseToCart, login, register, createCart } from './api/api'; 
 import './App.css';
 
 function App() {
@@ -16,15 +17,32 @@ function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null); // [NUEVO] Estado para el nombre de usuario
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCart = async (currentUserId: string) => {
       try {
+        // [CAMBIO] Intenta cargar el carrito
         const items = await getCartItems(currentUserId);
         setCartItems(items);
       } catch (error) {
+        // [CAMBIO] Si falla, verifica si es un error 404
         console.error("No se pudo cargar el carrito del usuario:", error);
+        
+        // Verifica si el error es de tipo '404 Resource Not Found'
+        if (error instanceof Error && error.message.includes('404')) {
+          console.log("El carrito no existe, intentando crear uno nuevo...");
+          try {
+            // Llama a la nueva función para crear el carrito.
+            // Asegúrate de que esta función envíe un POST a la API.
+            await createCart(currentUserId);
+            // Si el carrito se crea con éxito, actualiza el estado a un carrito vacío
+            setCartItems([]);
+            console.log("Nuevo carrito creado con éxito.");
+          } catch (createError) {
+            console.error("Error al crear el carrito:", createError);
+          }
+        }
       }
     };
     
@@ -52,14 +70,13 @@ function App() {
   const handleLogin = async (username: string, password: string) => {
     try {
       const result = await login(username, password);
-      console.log('Resultado del login:', result); // Para depuración
+      console.log('Resultado del login:', result);
       
-      if (result && result.token) { // ✅ Corregido: verificar token en lugar de userId
-        // Como el login solo devuelve token, usar username como identificador temporal
-        setUserId(username); // Temporal: usar username como userId
+      if (result && result.token) {
+        setUserId(username);
         setUserName(username); 
         alert("¡Has iniciado sesión con éxito!");
-        closeLoginModal(); // Cierra el modal de login en caso de éxito
+        closeLoginModal();
         return true;
       }
       return false;
@@ -73,14 +90,14 @@ function App() {
   const handleRegister = async (username: string, password: string, email: string) => {
     try {
         const result = await register(username, password, email);
-        console.log('Resultado del registro:', result); // Para depuración
+        console.log('Resultado del registro:', result);
         
-        if (result && result.userId) { // ✅ Esto debería funcionar según la respuesta de tu API
-            setUserId(result.userId);
-            setUserName(username);
-            alert("¡Registro exitoso! Ya has iniciado sesión.");
-            closeRegisterModal(); // Cierra el modal de registro en caso de éxito
-            return true;
+        if (result && result.userId) {
+          setUserId(result.userId);
+          setUserName(username);
+          alert("¡Registro exitoso! Ya has iniciado sesión.");
+          closeRegisterModal();
+          return true;
         }
         return false;
     } catch (error) {
