@@ -10,14 +10,16 @@ import './HomePage.css';
 import awsIcon from '../assets/images/aws-icon.png';
 import azureIcon from '../assets/images/azure-icon.png';
 import googleIcon from '../assets/images/google-icon.png';
+import type { PaymentResult } from '../types/Payment';
 
-// [CORRECCIÓN] La interfaz de propiedades ahora recibe el userId y el tipo de la función onAddToCart es correcto
+// [ACTUALIZACIÓN] La interfaz de propiedades ahora también recibe la función onProcessPayment
 interface HomePageProps {
   onItemAddedToCart: (course: Course) => Promise<void>;
   userId: string | null;
+  onProcessPayment: (userId: string) => Promise<PaymentResult>;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId }) => {
+const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProcessPayment }) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,19 +65,8 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId }) => {
     setSelectedCourse(null);
   };
 
-  // [NUEVO] Lógica para manejar el "Añadir al carrito" con la validación de autenticación
-  const handleAddToCart = async () => {
-    if (!userId) {
-      alert('Debes iniciar sesión para añadir cursos al carrito.');
-      return;
-    }
-    
-    if (selectedCourse) {
-      await onItemAddedToCart(selectedCourse);
-      alert('¡Curso añadido al carrito!');
-      handleCloseModal();
-    }
-  };
+  // [ELIMINADO] La función 'handleAddToCart' que estaba aquí es redundante, ya que el modal puede llamar directamente a 'onItemAddedToCart'.
+  // Esta corrección simplifica la lógica y evita tener validaciones en múltiples lugares.
 
   const filteredCourses = courses.filter(course =>
     course.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -118,7 +109,9 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId }) => {
         <CourseActionModal
           course={selectedCourse}
           onClose={handleCloseModal}
-          onAddToCart={handleAddToCart}
+          onAddToCart={() => onItemAddedToCart(selectedCourse)} // Llamamos directamente a la función
+          userId={userId} // NUEVO: Pasamos el userId al modal
+          onProcessPayment={onProcessPayment} // NUEVO: Pasamos la función de pago
         />
       )}
     </div>

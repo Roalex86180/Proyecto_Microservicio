@@ -156,3 +156,41 @@ export const register = async (username: string, password: string, email: string
         throw error;
     }
 };
+
+
+
+const PAYMENT_API_URL = 'https://miapimanagement1.azure-api.net/payment/payment';
+
+// [CAMBIO] La función ahora recibe un courseId opcional
+export const processPayment = async (userId: string, courseId?: string) => {
+  // [CAMBIO] Se crea un cuerpo de solicitud que puede incluir el courseId
+  const requestBody: { userId: string; courseId?: string } = { userId };
+  if (courseId) {
+    requestBody.courseId = courseId;
+  }
+
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY,
+    },
+    // [CAMBIO] Se envía el nuevo cuerpo de la solicitud
+    body: JSON.stringify(requestBody),
+  };
+
+  try {
+    const response = await fetch(PAYMENT_API_URL, requestOptions);
+    if (!response.ok) {
+      const error = new Error(`Error: ${response.status} ${response.statusText}`);
+      (error as any).status = response.status;
+      throw error;
+    }
+    const result = await response.json();
+    console.log("Pago procesado:", result);
+    return result;
+  } catch (error) {
+    console.error('Error al procesar el pago:', error);
+    throw error;
+  }
+};
