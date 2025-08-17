@@ -20,7 +20,7 @@ spec:
       - name: acr-secret
       containers:
         - name: paymentservice
-          image: Containermicroservicio.azurecr.io/paymentservice:vR # <-- Asegúrate de usar un nuevo tag aquí (ej. v1, v2, v3)
+          image: Containermicroservicio.azurecr.io/paymentservice:vR # <-- Asegúrate de usar un nuevo tag aquí 
           ports:
             - containerPort: 80
           env:
