@@ -18,7 +18,7 @@ var host = new HostBuilder()
             return new CosmosClient(connectionString);
         });
 
-        // Registro del BlobServiceClient (SIN CAMBIOS)
+        // Registro dl BlobServiceClient (SIN CAMBIOS)
         services.AddSingleton(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
