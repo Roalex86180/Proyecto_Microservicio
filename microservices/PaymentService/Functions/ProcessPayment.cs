@@ -68,40 +68,37 @@ namespace PaymentService.Functions
 
             try
             {
-                var cartDatabase = _cosmosClient.GetDatabase("CartDb");
-                var cartContainer = cartDatabase.GetContainer("Items");
-
                 var purchasesDatabase = _cosmosClient.GetDatabase("PurchasesDb");
                 var purchasesContainer = purchasesDatabase.GetContainer("UserPurchases");
 
+                // [MODIFICACIÓN] Lógica para procesar un solo curso, sin necesidad del carrito.
+                // La lógica del carrito (el bloque 'else') se mantiene sin cambios.
                 if (!string.IsNullOrEmpty(paymentRequest.CourseId))
                 {
-                    _logger.LogInformation($"Processing single course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
-                    
-                    var querySingleItem = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId AND c.productId = @courseId")
-                        .WithParameter("@userId", paymentRequest.UserId)
-                        .WithParameter("@courseId", paymentRequest.CourseId);
+                    _logger.LogInformation($"Processing direct payment for course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
 
-                    var singleItem = (await cartContainer.GetItemQueryIterator<CartItem>(querySingleItem, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) })
-                                                         .ReadNextAsync()).FirstOrDefault();
-                    
-                    if (singleItem != null)
+                    // Verifica que la solicitud de pago directo incluya el nombre y precio del producto.
+                    if (string.IsNullOrEmpty(paymentRequest.ProductName) || !paymentRequest.Price.HasValue)
                     {
-                        var purchaseRecord = new UserPurchase
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            UserId = singleItem.UserId,
-                            ProductId = singleItem.ProductId,
-                            ProductName = singleItem.ProductName,
-                            Price = singleItem.Price,
-                            PurchaseDate = DateTime.UtcNow
-                        };
-                        await purchasesContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
-                        _logger.LogInformation($"Course '{singleItem.ProductName}' permanently saved to UserPurchases for user '{singleItem.UserId}'.");
-                        
-                        await cartContainer.DeleteItemAsync<CartItem>(singleItem.Id, new PartitionKey(paymentRequest.UserId));
+                        var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                        await errorResponse.WriteStringAsync("For a direct payment, ProductName and Price are required in the request body.");
+                        return errorResponse;
                     }
-
+                    
+                    var purchaseRecord = new UserPurchase
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = paymentRequest.UserId,
+                        ProductId = paymentRequest.CourseId,
+                        ProductName = paymentRequest.ProductName,
+                        Price = paymentRequest.Price.Value,
+                        PurchaseDate = DateTime.UtcNow
+                    };
+                    
+                    // Guarda la compra directamente en la base de datos de compras.
+                    await purchasesContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
+                    _logger.LogInformation($"Course '{purchaseRecord.ProductName}' permanently saved to UserPurchases for user '{purchaseRecord.UserId}'.");
+                    
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
                     await successResponse.WriteAsJsonAsync(new
                     {
@@ -109,8 +106,11 @@ namespace PaymentService.Functions
                     });
                     return successResponse;
                 }
-                else
+                else // Lógica existente para procesar el carrito completo
                 {
+                    var cartDatabase = _cosmosClient.GetDatabase("CartDb");
+                    var cartContainer = cartDatabase.GetContainer("Items");
+
                     _logger.LogInformation($"Searching for cart items for UserId: {paymentRequest.UserId}");
 
                     var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
@@ -155,7 +155,6 @@ namespace PaymentService.Functions
                     {
                         _logger.LogError($"Transactional batch for UserPurchases failed with status code: {purchaseBatchResponse.StatusCode}.");
                         
-                        // [CORRECCIÓN] Se especifica explícitamente el tipo genérico para la operación
                         for (int i = 0; i < purchaseBatchResponse.Count; i++)
                         {
                             var operation = purchaseBatchResponse.GetOperationResultAtIndex<UserPurchase>(i);
