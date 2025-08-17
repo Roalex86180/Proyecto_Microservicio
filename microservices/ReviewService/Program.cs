@@ -40,7 +40,7 @@ var host = new HostBuilder()
         {
             var client = provider.GetRequiredService<IMongoClient>();
             // [IMPORTANTE] Reemplaza "NombreDeTuBaseDeDatosDeCursos" con el nombre real de tu DB
-            var dbName = "NombreDeTuBaseDeDatosDeCursos"; 
+            var dbName = "aca-db"; 
             return client.GetDatabase(dbName);
         });
 
