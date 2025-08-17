@@ -71,10 +71,7 @@ namespace PaymentService.Functions
 
             try
             {
-                // Obtenemos la base de datos y el contenedor de compras del cliente correcto
-                var reviewsDatabase = _reviewsClient.GetDatabase("ReviewsDb");
-                var purchasesContainer = reviewsDatabase.GetContainer("Reviews");
-
+                // Flujo de pago directo
                 if (!string.IsNullOrEmpty(paymentRequest.CourseId))
                 {
                     _logger.LogInformation($"Processing direct payment for course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
@@ -86,6 +83,10 @@ namespace PaymentService.Functions
                         return errorResponse;
                     }
 
+                    // Se crea un registro de compra en la base de datos de reseñas (ReviewsDb)
+                    var reviewsDatabase = _reviewsClient.GetDatabase("ReviewsDb");
+                    var reviewsContainer = reviewsDatabase.GetContainer("Reviews");
+
                     var purchaseRecord = new UserPurchase
                     {
                         Id = Guid.NewGuid().ToString(),
@@ -96,7 +97,7 @@ namespace PaymentService.Functions
                         PurchaseDate = DateTime.UtcNow
                     };
 
-                    await purchasesContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
+                    await reviewsContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
                     _logger.LogInformation($"Course '{purchaseRecord.ProductName}' permanently saved to UserPurchases for user '{purchaseRecord.UserId}'.");
 
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
@@ -106,10 +107,11 @@ namespace PaymentService.Functions
                     });
                     return successResponse;
                 }
+                // Flujo de pago del carrito
                 else
                 {
                     var cartDatabase = _cartClient.GetDatabase("CartDb");
-                    var cartContainer = cartDatabase.GetContainer("Items");
+                    var cartContainer = cartDatabase.GetContainer("Items"); // Contenedor para leer y eliminar items del carrito
 
                     _logger.LogInformation($"Searching for cart items for UserId: {paymentRequest.UserId}");
 
@@ -133,9 +135,11 @@ namespace PaymentService.Functions
                         return response;
                     }
 
-                    _logger.LogInformation($"Simulating payment for user 'Alex' with {cartItems.Count} items.");
+                    _logger.LogInformation($"Simulating payment for user '{paymentRequest.UserId}' with {cartItems.Count} items.");
 
-                    // CORRECCIÓN: Usamos el contenedor de compras obtenido del cliente correcto
+                    // CORRECCIÓN: Usamos el contenedor de compras en la base de datos del carrito
+                    var purchasesContainer = cartDatabase.GetContainer("Purchases"); // Contenedor para registrar las compras
+
                     var purchaseBatch = purchasesContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
                     {
@@ -155,7 +159,7 @@ namespace PaymentService.Functions
                     if (!purchaseBatchResponse.IsSuccessStatusCode)
                     {
                         _logger.LogError($"Transactional batch for UserPurchases failed with status code: {purchaseBatchResponse.StatusCode}.");
-
+                        
                         for (int i = 0; i < purchaseBatchResponse.Count; i++)
                         {
                             var operation = purchaseBatchResponse.GetOperationResultAtIndex<UserPurchase>(i);
@@ -172,6 +176,7 @@ namespace PaymentService.Functions
 
                     _logger.LogInformation($"Successfully recorded {cartItems.Count} new purchases for user '{paymentRequest.UserId}'.");
 
+                    // CORRECCIÓN: Usamos un segundo batch transaccional para limpiar el carrito
                     var cartBatch = cartContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
                     {

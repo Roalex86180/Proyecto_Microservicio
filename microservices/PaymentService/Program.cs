@@ -1,51 +1,49 @@
+// src/PaymentService/Program.cs
+
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Azure.Cosmos;
 using System;
 
-var builder = new HostBuilder();
-
-builder.ConfigureFunctionsWebApplication();
-
-// -- INICIO DEL CAMBIO CORREGIDO --
-// Añadimos la configuración
-builder.ConfigureAppConfiguration(config =>
-{
-    config.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-          .AddEnvironmentVariables();
-});
-
-// Añadimos el registro de servicios
-builder.ConfigureServices((context, services) =>
-{
-    // Obtenemos las cadenas de conexión
-    var reviewsDbConnectionString = context.Configuration["ReviewsDbConnectionString"];
-    var cartDbConnectionString = context.Configuration["CartDbConnectionString"];
-
-    if (string.IsNullOrEmpty(reviewsDbConnectionString) || string.IsNullOrEmpty(cartDbConnectionString))
+var host = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults()
+    .ConfigureServices(services =>
     {
-        throw new InvalidOperationException("Cosmos DB connection strings not set correctly.");
-    }
-    
-    // Registramos una fábrica para los CosmosClients
-    services.AddSingleton(provider => new Func<string, CosmosClient>(dbName =>
-    {
-        if (dbName.Equals("ReviewsDbClient", StringComparison.OrdinalIgnoreCase))
-        {
-            return new CosmosClient(reviewsDbConnectionString);
-        }
-        else if (dbName.Equals("CartDbClient", StringComparison.OrdinalIgnoreCase))
-        {
-            return new CosmosClient(cartDbConnectionString);
-        }
-        throw new ArgumentException("Invalid client name requested.");
-    }));
+        services.AddApplicationInsightsTelemetryWorkerService();
+        services.ConfigureFunctionsApplicationInsights();
 
-    services.AddApplicationInsightsTelemetryWorkerService();
-    services.ConfigureFunctionsApplicationInsights();
-});
+        // Leer las dos cadenas de conexión
+        var reviewsDbConnectionString = Environment.GetEnvironmentVariable("ReviewsDbConnectionString");
+        var cartDbConnectionString = Environment.GetEnvironmentVariable("CartDbConnectionString");
 
-var app = builder.Build();
-app.Run();
+        if (string.IsNullOrEmpty(reviewsDbConnectionString))
+        {
+            throw new ArgumentNullException("ReviewsDbConnectionString", "The ReviewsDbConnectionString environment variable is not set.");
+        }
+
+        if (string.IsNullOrEmpty(cartDbConnectionString))
+        {
+            throw new ArgumentNullException("CartDbConnectionString", "The CartDbConnectionString environment variable is not set.");
+        }
+
+        // Registrar un Factory para crear los clientes de Cosmos DB
+        services.AddSingleton<Func<string, CosmosClient>>(provider => dbName =>
+        {
+            if (dbName.Equals("ReviewsDbClient", StringComparison.OrdinalIgnoreCase))
+            {
+                return new CosmosClient(reviewsDbConnectionString);
+            }
+            else if (dbName.Equals("CartDbClient", StringComparison.OrdinalIgnoreCase))
+            {
+                return new CosmosClient(cartDbConnectionString);
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown Cosmos DB client key: {dbName}");
+            }
+        });
+    })
+    .Build();
+
+host.Run();

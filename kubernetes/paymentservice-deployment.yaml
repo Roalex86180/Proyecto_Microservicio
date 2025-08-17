@@ -1,3 +1,5 @@
+# src/PaymentService/kubernetes/deployment.yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,18 +22,19 @@ spec:
       - name: acr-secret
       containers:
         - name: paymentservice
-          image: Containermicroservicio.azurecr.io/paymentservice:vR # <-- Asegúrate de usar un nuevo tag aquí 
+          image: Containermicroservicio.azurecr.io/paymentservice:vR
           ports:
             - containerPort: 80
           env:
             - name: FUNCTIONS_WORKER_RUNTIME
               value: "dotnet-isolated"
-            - name: CosmosDb__ConnectionString
+            - name: ReviewsDbConnectionString # Nueva variable
               valueFrom:
                 secretKeyRef:
                   name: paymentservice-secrets
-                  key: CosmosDbConnectionString
-            - name: CosmosDb__DatabaseName
-              value: "ReviewsDb"
-            - name: CosmosDb__ContainerName
-              value: "Reviews" 
+                  key: ReviewsDbConnectionString
+            - name: CartDbConnectionString # Nueva variable
+              valueFrom:
+                secretKeyRef:
+                  name: paymentservice-secrets
+                  key: CartDbConnectionString
