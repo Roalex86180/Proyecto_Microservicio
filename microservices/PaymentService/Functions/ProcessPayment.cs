@@ -68,28 +68,42 @@ namespace PaymentService.Functions
 
             try
             {
-                var database = _cosmosClient.GetDatabase("CartDb");
-                var container = database.GetContainer("Items");
+                var cartDatabase = _cosmosClient.GetDatabase("CartDb");
+                var cartContainer = cartDatabase.GetContainer("Items");
 
-                // [NUEVA LÓGICA] Si hay un CourseId en la solicitud, procesa solo ese curso
+                // [NUEVA LÓGICA] Obtener una referencia a la colección de compras permanentes
+                var authDatabase = _cosmosClient.GetDatabase("AuthDb");
+                var purchasesContainer = authDatabase.GetContainer("UserPurchases");
+
+                // Lógica para procesar un solo curso si se especifica
                 if (!string.IsNullOrEmpty(paymentRequest.CourseId))
                 {
                     _logger.LogInformation($"Processing single course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
                     
-                    // Simular el pago del curso único
-                    // NOTA: Aquí puedes agregar lógica para verificar si el curso existe y pertenece al usuario.
-                    
-                    // Lógica para eliminar el curso del carrito si existe
-                    var querySingleItem = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId AND c.courseId = @courseId")
+                    var querySingleItem = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId AND c.productId = @courseId")
                         .WithParameter("@userId", paymentRequest.UserId)
                         .WithParameter("@courseId", paymentRequest.CourseId);
 
-                    var singleItem = (await container.GetItemQueryIterator<CartItem>(querySingleItem, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) })
-                                    .ReadNextAsync()).FirstOrDefault();
+                    var singleItem = (await cartContainer.GetItemQueryIterator<CartItem>(querySingleItem, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) })
+                                                         .ReadNextAsync()).FirstOrDefault();
                     
                     if (singleItem != null)
                     {
-                        await container.DeleteItemAsync<CartItem>(singleItem.Id, new PartitionKey(paymentRequest.UserId));
+                        // [NUEVA LÓGICA] 1. Guardar el ítem en la nueva colección permanente
+                        var purchaseRecord = new UserPurchase
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = singleItem.UserId,
+                            ProductId = singleItem.ProductId,
+                            ProductName = singleItem.ProductName,
+                            Price = singleItem.Price,
+                            PurchaseDate = DateTime.UtcNow
+                        };
+                        await purchasesContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
+                        _logger.LogInformation($"Course '{singleItem.ProductName}' permanently saved to UserPurchases for user '{singleItem.UserId}'.");
+                        
+                        // [LÓGICA EXISTENTE] 2. Eliminar el ítem del carrito temporal
+                        await cartContainer.DeleteItemAsync<CartItem>(singleItem.Id, new PartitionKey(paymentRequest.UserId));
                     }
 
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
@@ -107,7 +121,7 @@ namespace PaymentService.Functions
                         .WithParameter("@userId", paymentRequest.UserId);
                     
                     var cartItems = new List<CartItem>();
-                    using (var feedIterator = container.GetItemQueryIterator<CartItem>(queryDefinition, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) }))
+                    using (var feedIterator = cartContainer.GetItemQueryIterator<CartItem>(queryDefinition, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) }))
                     {
                         while (feedIterator.HasMoreResults)
                         {
@@ -122,25 +136,52 @@ namespace PaymentService.Functions
                         await response.WriteStringAsync($"Cart for user '{paymentRequest.UserId}' is empty. No payment to process.");
                         return response;
                     }
-
+                    
                     _logger.LogInformation($"Simulating payment for user '{paymentRequest.UserId}' with {cartItems.Count} items.");
                     
-                    var batch = container.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
+                    // [NUEVA LÓGICA] 1. Guardar todos los ítems en la nueva colección permanente
+                    var purchaseBatch = purchasesContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
                     {
-                        batch.DeleteItem(item.Id);
+                        var purchaseRecord = new UserPurchase
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = item.UserId,
+                            ProductId = item.ProductId,
+                            ProductName = item.ProductName,
+                            Price = item.Price,
+                            PurchaseDate = DateTime.UtcNow
+                        };
+                        purchaseBatch.CreateItem(purchaseRecord);
+                    }
+                    var purchaseBatchResponse = await purchaseBatch.ExecuteAsync();
+
+                    if (!purchaseBatchResponse.IsSuccessStatusCode)
+                    {
+                        _logger.LogError($"Transactional batch for UserPurchases failed with status code: {purchaseBatchResponse.StatusCode}");
+                        var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                        await errorResponse.WriteStringAsync("Payment processed, but failed to record purchases. Please contact support.");
+                        return errorResponse;
                     }
 
-                    var batchResponse = await batch.ExecuteAsync();
+                    _logger.LogInformation($"Successfully recorded {cartItems.Count} new purchases for user '{paymentRequest.UserId}'.");
 
-                    if (!batchResponse.IsSuccessStatusCode)
+                    // [LÓGICA EXISTENTE] 2. Eliminar todos los ítems del carrito temporal
+                    var cartBatch = cartContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
+                    foreach (var item in cartItems)
                     {
-                        _logger.LogError($"Transactional batch failed with status code: {batchResponse.StatusCode}");
+                        cartBatch.DeleteItem(item.Id);
+                    }
+                    var cartBatchResponse = await cartBatch.ExecuteAsync();
+
+                    if (!cartBatchResponse.IsSuccessStatusCode)
+                    {
+                        _logger.LogError($"Transactional batch failed with status code: {cartBatchResponse.StatusCode}");
                         var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
                         await errorResponse.WriteStringAsync("Payment processed, but failed to clear cart. Please contact support.");
                         return errorResponse;
                     }
-
+                    
                     _logger.LogInformation($"Successfully processed payment and cleared cart for user '{paymentRequest.UserId}'.");
 
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
