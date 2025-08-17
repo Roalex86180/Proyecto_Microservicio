@@ -43,3 +43,7 @@ spec:
                 secretKeyRef:
                   name: reviewservice-secrets
                   key: CoursesDbConnectionString
+            - name: CosmosDb__DatabaseName
+              value: "ReviewsDb"  # <-- Agrega esta linea
+            - name: CosmosDb__ContainerName
+              value: "Reviews"    # <-- Agrega esta linea
