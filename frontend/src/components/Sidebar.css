@@ -1,26 +1,30 @@
 /* src/components/Sidebar.css */
 .sidebar {
+  /* Estilos principales de la barra lateral */
   width: 250px;
   background-color: #f4f4f4;
   height: 100vh;
   padding: 20px;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease; /* Transición para el ancho */
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
-  box-sizing: border-box; /* Esto es importante para que el padding no afecte el ancho total */
-  overflow-y: auto; /* Permite desplazamiento si la lista es muy larga */
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
+/* [MODIFICACIÓN] Esta clase reduce el ancho de la barra lateral */
 .sidebar-hidden {
-  width: 60px;
+  width: 60px; /* Ancho deseado para mostrar solo los iconos */
+  padding: 10px; /* Reducimos el padding para que no ocupe tanto espacio */
 }
 
+/* El botón de alternar */
 .sidebar-toggle {
   text-align: right;
   font-size: 24px;
   cursor: pointer;
   margin-bottom: 20px;
-  color: #343a40; /* Color del icono del menú */
+  color: #343a40;
   padding-right: 10px;
 }
 
@@ -55,6 +59,7 @@
   text-align: center;
 }
 
+/* [MODIFICACIÓN] Esta regla oculta el texto cuando la barra está colapsada */
 .sidebar-hidden .sidebar-list a .name {
   display: none;
 }

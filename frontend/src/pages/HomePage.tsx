@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { type Course } from '../types/Course';
 import { getCourses } from '../api/api';
-import Sidebar from '../components/Sidebar';
 import SearchBar from '../components/SearchBar';
 import CourseActionModal from '../components/CourseActionModal';
 import './HomePage.css';
@@ -11,14 +10,11 @@ import './HomePage.css';
 import awsIcon from '../assets/images/aws-icon.png';
 import azureIcon from '../assets/images/azure-icon.png';
 import googleIcon from '../assets/images/google-icon.png';
-// [MODIFICACIÓN 1] Ahora importamos el tipo PaymentRequest también
 import type { PaymentResult, PaymentRequest } from '../types/Payment';
 
-// [ACTUALIZACIÓN] La interfaz de propiedades ahora también recibe la función onProcessPayment
 interface HomePageProps {
   onItemAddedToCart: (course: Course) => Promise<void>;
   userId: string | null;
-  // [MODIFICACIÓN 2] La prop onProcessPayment ahora acepta un objeto PaymentRequest completo.
   onProcessPayment: (paymentRequest: PaymentRequest) => Promise<PaymentResult>;
 }
 
@@ -26,7 +22,6 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProces
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
@@ -56,10 +51,6 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProces
     fetchCourses();
   }, []);
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
-
   const handleCourseClick = (course: Course) => {
     setSelectedCourse(course);
   };
@@ -68,9 +59,6 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProces
     setSelectedCourse(null);
   };
 
-  // [ELIMINADO] La función 'handleAddToCart' que estaba aquí es redundante, ya que el modal puede llamar directamente a 'onItemAddedToCart'.
-  // Esta corrección simplifica la lógica y evita tener validaciones en múltiples lugares.
-
   const filteredCourses = courses.filter(course =>
     course.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.Description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -78,7 +66,6 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProces
 
   return (
     <div className="home-page-layout">
-      <Sidebar isSidebarVisible={isSidebarVisible} toggleSidebar={toggleSidebar} />
       <div className="course-content">
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         {loading && <div>Cargando cursos...</div>}
@@ -112,9 +99,9 @@ const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProces
         <CourseActionModal
           course={selectedCourse}
           onClose={handleCloseModal}
-          onAddToCart={() => onItemAddedToCart(selectedCourse)} // Llamamos directamente a la función
-          userId={userId} // NUEVO: Pasamos el userId al modal
-          onProcessPayment={onProcessPayment} // NUEVO: Pasamos la función de pago
+          onAddToCart={() => onItemAddedToCart(selectedCourse)}
+          userId={userId}
+          onProcessPayment={onProcessPayment}
         />
       )}
     </div>

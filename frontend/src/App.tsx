@@ -5,7 +5,7 @@ import HomePage from './pages/HomePage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import UserPage from './components/UserPage';
-// [NUEVO] Importamos el nuevo componente del modal del carrito
+import Sidebar from './components/Sidebar';
 import CartModal from './components/CartModal'; 
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
@@ -14,6 +14,13 @@ import { getCartItems, addCourseToCart, login, register, createCart, processPaym
 import './App.css';
 import type { PaymentResult, PaymentRequest } from './types/Payment';
 
+interface VideoReview {
+  Name: string;
+  Url: string;
+}
+
+type SidebarItem = 'Microsoft Azure' | 'Testimonios' | 'Amazon Web Services' | 'Google Cloud' | 'Estructura del Proyecto';
+
 function App() {
   const [cartItems, setCartItems] = useState<Course[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -21,8 +28,17 @@ function App() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
-  // [NUEVO] Estado para controlar la visibilidad del modal del carrito
   const [isCartModalOpen, setIsCartModalOpen] = useState(false); 
+  
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState<SidebarItem>('Microsoft Azure');
+  const [videos, setVideos] = useState<VideoReview[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleSidebar = () => {
+    setIsSidebarVisible(prev => !prev);
+  };
 
   useEffect(() => {
     const loadCart = async (currentUserId: string) => {
@@ -49,6 +65,30 @@ function App() {
       setCartItems([]);
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (selectedSidebarItem === 'Testimonios') {
+      const fetchVideos = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await fetch('https://[tu-function-app].azurewebsites.net/api/ListVideoReviews');
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+          }
+          const data = await response.json();
+          setVideos(data);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchVideos();
+    } else {
+      setVideos([]);
+    }
+  }, [selectedSidebarItem]);
 
   const handleItemAdded = async (course: Course) => {
     if (!userId) {
@@ -141,36 +181,62 @@ function App() {
     setIsRegisterModalOpen(true);
   };
   const closeRegisterModal = () => setIsRegisterModalOpen(false);
-  // [NUEVO] Funciones para abrir y cerrar el modal del carrito
   const openCartModal = () => setIsCartModalOpen(true);
   const closeCartModal = () => setIsCartModalOpen(false);
-
+  
+  const handleItemClick = (itemName: string) => {
+    setSelectedSidebarItem(itemName as SidebarItem);
+  };
+  
   return (
     <div className="App">
+      {/* El header ahora es un elemento aparte */}
       <Header
         cartItemCount={cartItems.length}
         isLoggedIn={!!userId}
         userName={userName}
         onLogin={openLoginModal}
         onLogout={handleLogout}
-        // [NUEVO] Pasamos la función para abrir el modal del carrito
         onOpenCartModal={openCartModal} 
       />
-      <div className="main-content">
-        <Routes>
-          <Route
-            path="/"
-            element={<HomePage onItemAddedToCart={handleItemAdded} userId={userId} onProcessPayment={handlePayment} />}
-          />
-          <Route
-            path="/my-courses"
-            element={
-              <UserPage
-                userId={userId}
+      {/* [NUEVO] Nuevo contenedor para la barra lateral y el contenido principal */}
+      <div className="page-layout-container">
+        <Sidebar isSidebarVisible={isSidebarVisible} toggleSidebar={toggleSidebar} onItemClick={handleItemClick} />
+        <main className="main-content">
+          {selectedSidebarItem === 'Testimonios' ? (
+            <div>
+              <h1>Testimonios</h1>
+              {loading && <p>Cargando videos...</p>}
+              {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+              {!loading && !error && videos.length > 0 && (
+                <div className="video-list">
+                  {videos.map((video, index) => (
+                    <div key={index}>
+                      <h3>{video.Name}</h3>
+                      <video src={video.Url} controls style={{ maxWidth: '100%', height: 'auto' }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!loading && !error && videos.length === 0 && <p>No se encontraron videos de testimonios.</p>}
+            </div>
+          ) : (
+            <Routes>
+              <Route
+                path="/"
+                element={<HomePage onItemAddedToCart={handleItemAdded} userId={userId} onProcessPayment={handlePayment} />}
               />
-            }
-          />
-        </Routes>
+              <Route
+                path="/my-courses"
+                element={
+                  <UserPage
+                    userId={userId}
+                  />
+                }
+              />
+            </Routes>
+          )}
+        </main>
       </div>
       <Footer />
       {isLoginModalOpen && (
@@ -187,7 +253,6 @@ function App() {
           onSwitchToLogin={openLoginModal}
         />
       )}
-      {/* [NUEVO] Renderizamos el modal del carrito condicionalmente */}
       <CartModal
         isOpen={isCartModalOpen}
         onClose={closeCartModal}

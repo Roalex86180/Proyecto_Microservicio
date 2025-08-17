@@ -1,10 +1,24 @@
 /* src/App.css */
 .App {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* El contenedor principal se organiza en columna */
   min-height: 100vh;
 }
 
+.page-layout-container {
+  display: flex; /* El nuevo contenedor se organiza en fila */
+  flex-grow: 1; /* Ocupa todo el espacio vertical restante */
+}
+
 .main-content {
-  flex-grow: 1; /* Permite que el contenido principal ocupe todo el espacio restante */
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Estilos de la barra lateral */
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  height: 100%; /* Ahora la altura es el 100% de su contenedor padre */
 }
