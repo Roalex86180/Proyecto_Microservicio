@@ -1,3 +1,4 @@
+# deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,6 +34,12 @@ spec:
                 secretKeyRef:
                   name: reviewservice-secrets
                   key: CosmosDbConnectionString
+            # [MODIFICACIÓN] Agregamos esta variable que la función espera por defecto
+            - name: AzureWebJobsStorage
+              valueFrom:
+                secretKeyRef:
+                  name: reviewservice-secrets
+                  key: AzureBlobStorageConnectionString
             - name: AzureBlobStorageConnectionString
               valueFrom:
                 secretKeyRef:
@@ -44,6 +51,6 @@ spec:
                   name: reviewservice-secrets
                   key: CoursesDbConnectionString
             - name: CosmosDb__DatabaseName
-              value: "ReviewsDb"  # <-- Agrega esta linea
+              value: "ReviewsDb"
             - name: CosmosDb__ContainerName
-              value: "Reviews"    # <-- Agrega esta linea
+              value: "Reviews"
