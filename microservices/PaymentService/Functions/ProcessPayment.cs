@@ -176,7 +176,7 @@ namespace PaymentService.Functions
 
                     _logger.LogInformation($"Successfully recorded {cartItems.Count} new purchases for user '{paymentRequest.UserId}'.");
 
-                    // CORRECCIÓN: Usamos un segundo batch transaccional para limpiar el carrito
+                    // CORRECCIÓN: Usamos un sgundo batch transaccional para limpiar el carrito
                     var cartBatch = cartContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
                     {
