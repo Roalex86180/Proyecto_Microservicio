@@ -1,24 +1,28 @@
+// src/components/Header.tsx
 import { Link } from 'react-router-dom';
 import React from 'react';
 import './Header.css';
 import alainLogo from '../assets/Alain.jpeg';
+// [MODIFICACIÓN 1] Ahora usamos FaShoppingCart y FaUserCircle
 import { FaShoppingCart, FaUserCircle } from 'react-icons/fa';
 
-// ✅ Agregar userName a la interfaz
 interface HeaderProps {
   cartItemCount: number;
   isLoggedIn: boolean;
-  userName?: string | null; // ← Agregar esta propiedad
+  userName?: string | null;
   onLogin: () => void;
   onLogout: () => void;
+  // [NUEVO] Propiedad para abrir el modal del carrito
+  onOpenCartModal: () => void; 
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   cartItemCount, 
   isLoggedIn, 
-  userName, // ← Recibir userName
+  userName,
   onLogin, 
-  onLogout 
+  onLogout,
+  onOpenCartModal
 }) => {
   return (
     <header className="header">
@@ -27,17 +31,27 @@ const Header: React.FC<HeaderProps> = ({
         <h1 className="title">Alain Cloud Academy</h1>
       </div>
       <div className="user-actions">
-        <Link to="/cart" className="cart-icon">
+        {/* [NUEVO] Ícono de carrito para abrir el modal */}
+        <div className="cart-icon-container" onClick={onOpenCartModal}>
           <FaShoppingCart color="white" size={24} />
           {cartItemCount > 0 && (
             <span className="cart-badge">{cartItemCount}</span>
           )}
-        </Link>
+        </div>
+        
         <div className="auth-button">
-          <FaUserCircle color="white" size={24} />
+          {/* [MODIFICACIÓN 2] Si está logueado, el ícono de usuario navega a "Mis Cursos" */}
+          {isLoggedIn ? (
+            <Link to="/my-courses" className="user-icon-link">
+              <FaUserCircle color="white" size={24} />
+            </Link>
+          ) : (
+            // [MODIFICACIÓN 3] Si no está logueado, solo se muestra el ícono.
+            <FaUserCircle color="white" size={24} />
+          )}
+
           {isLoggedIn ? (
             <div className="user-info">
-              {/* ✅ Mostrar el nombre de usuario */}
               <span className="username">¡Hola, {userName}!</span>
               <button onClick={onLogout}>Cerrar Sesión</button>
             </div>

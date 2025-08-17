@@ -4,12 +4,24 @@ import { type Course } from '../types/Course';
 import type { PaymentResult } from '../types/Payment';
 import './CourseActionModal.css';
 
+// [MODIFICACIÓN 1]
+// Creamos una nueva interfaz para los datos que se enviarán al backend,
+// esto hace que la llamada sea más limpia y explícita.
+interface PaymentRequest {
+  userId: string;
+  courseId?: string;
+  productName?: string;
+  price?: number;
+}
+
 interface CourseActionModalProps {
   course: Course;
   onClose: () => void;
   onAddToCart: () => Promise<void>;
   userId: string | null;
-  onProcessPayment: (userId: string, courseId?: string) => Promise<PaymentResult>;
+  // [MODIFICACIÓN 2]
+  // La prop onProcessPayment ahora acepta un objeto PaymentRequest completo.
+  onProcessPayment: (paymentRequest: PaymentRequest) => Promise<PaymentResult>;
 }
 
 const CourseActionModal: React.FC<CourseActionModalProps> = ({
@@ -51,7 +63,18 @@ const CourseActionModal: React.FC<CourseActionModalProps> = ({
     setActionStatus(null);
     try {
       console.log(`Procediendo a pagar ${course.Name}...`);
-      const result = await onProcessPayment(userId, course.Id);
+      
+      // [MODIFICACIÓN 3]
+      // En lugar de pasar userId y courseId por separado, creamos un objeto
+      // que incluye también el nombre y el precio del curso.
+      const paymentRequest: PaymentRequest = {
+        userId: userId,
+        courseId: course.Id,
+        productName: course.Name, // Agregamos el nombre del producto
+        price: course.Price, // Agregamos el precio del producto
+      };
+      
+      const result = await onProcessPayment(paymentRequest);
 
       if (result.message.includes('successfully')) {
         setActionStatus('✅ Su pago fue exitoso.');

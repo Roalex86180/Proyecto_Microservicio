@@ -5,7 +5,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: authenticationservice # Debe coincidir con el "label" del deploymnt
+    app: authenticationservice # Debe coincidir con el "label" del deployment
   ports:
     - protocol: TCP
       port: 80 

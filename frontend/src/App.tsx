@@ -4,13 +4,15 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import CartPage from './pages/CartPage';
+import UserPage from './components/UserPage';
+// [NUEVO] Importamos el nuevo componente del modal del carrito
+import CartModal from './components/CartModal'; 
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
 import { type Course } from './types/Course';
 import { getCartItems, addCourseToCart, login, register, createCart, processPayment } from './api/api';
 import './App.css';
-import type { PaymentResult } from './types/Payment';
+import type { PaymentResult, PaymentRequest } from './types/Payment';
 
 function App() {
   const [cartItems, setCartItems] = useState<Course[]>([]);
@@ -18,8 +20,9 @@ function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
-  // Estado para el mensaje de pago
   const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+  // [NUEVO] Estado para controlar la visibilidad del modal del carrito
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false); 
 
   useEffect(() => {
     const loadCart = async (currentUserId: string) => {
@@ -60,30 +63,24 @@ function App() {
     }
   };
 
-  // Función para vaciar el carrito (la usará CartPage tras mostrar el mensaje)
   const clearCart = () => setCartItems([]);
 
-  // Procesa el pago y muestra el mensaje del backend sin vaciar inmediatamente el carrito
-  const handlePayment = async (currentUserId: string, courseId?: string): Promise<PaymentResult> => {
-    if (!currentUserId) {
+  const handlePayment = async (paymentRequest: PaymentRequest): Promise<PaymentResult> => {
+    if (!paymentRequest.userId) {
       alert("Debes iniciar sesión para procesar el pago.");
       return { message: "Error: No se ha iniciado sesión." };
     }
     try {
-      const result = await processPayment(currentUserId, courseId);
+      const result = await processPayment(paymentRequest); 
       const msg = String(result?.message ?? "");
       console.log('Pago procesado:', msg);
 
-      // Mostrar SIEMPRE el mensaje del backend (incluye "successfully")
       setPaymentMessage(msg);
 
-      // Ocultar el mensaje después de 3 segundos
       setTimeout(() => {
         setPaymentMessage(null);
       }, 3000);
 
-      // Nota: NO vaciamos aquí el carrito.
-      // CartPage lo vaciará tras 2.5s si detecta éxito, usando onClearCart.
       return result;
     } catch (error) {
       console.error('Error al procesar el pago:', error);
@@ -144,6 +141,9 @@ function App() {
     setIsRegisterModalOpen(true);
   };
   const closeRegisterModal = () => setIsRegisterModalOpen(false);
+  // [NUEVO] Funciones para abrir y cerrar el modal del carrito
+  const openCartModal = () => setIsCartModalOpen(true);
+  const closeCartModal = () => setIsCartModalOpen(false);
 
   return (
     <div className="App">
@@ -153,6 +153,8 @@ function App() {
         userName={userName}
         onLogin={openLoginModal}
         onLogout={handleLogout}
+        // [NUEVO] Pasamos la función para abrir el modal del carrito
+        onOpenCartModal={openCartModal} 
       />
       <div className="main-content">
         <Routes>
@@ -161,14 +163,10 @@ function App() {
             element={<HomePage onItemAddedToCart={handleItemAdded} userId={userId} onProcessPayment={handlePayment} />}
           />
           <Route
-            path="/cart"
+            path="/my-courses"
             element={
-              <CartPage
-                cartItems={cartItems}
+              <UserPage
                 userId={userId}
-                onProcessPayment={handlePayment}
-                paymentMessage={paymentMessage}
-                onClearCart={clearCart}   // ← permite vaciar el carrito tras mostrar el mensaje
               />
             }
           />
@@ -189,7 +187,18 @@ function App() {
           onSwitchToLogin={openLoginModal}
         />
       )}
+      {/* [NUEVO] Renderizamos el modal del carrito condicionalmente */}
+      <CartModal
+        isOpen={isCartModalOpen}
+        onClose={closeCartModal}
+        cartItems={cartItems}
+        userId={userId}
+        onProcessPayment={handlePayment}
+        paymentMessage={paymentMessage}
+        onClearCart={clearCart}
+      />
     </div>
   );
 }
+
 export default App;

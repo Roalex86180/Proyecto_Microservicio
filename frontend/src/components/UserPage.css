@@ -1,0 +1,68 @@
+/* src/pages/UserPage.css */
+
+.user-page-container {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.user-page-container h2 {
+  font-size: 2.5em;
+  font-weight: 600;
+  color: #3e4a57;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.error-message {
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  padding: 15px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.purchased-courses-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  justify-content: center;
+}
+
+/* [MODIFICACIÓN] Estilos específicos para las tarjetas de cursos dentro de la página de usuario */
+.user-page-container .course-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-page-container .course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.user-page-container .course-card h3 {
+  color: #007bff;
+  font-size: 1.5em;
+  margin-top: 0;
+}
+
+.user-page-container .course-card p {
+  color: #555;
+  font-size: 1em;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+.user-page-container .course-card .price {
+  font-weight: bold;
+  color: #28a745;
+}

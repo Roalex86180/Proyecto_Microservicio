@@ -1,3 +1,4 @@
+// src/pages/HomePage.tsx
 import { useEffect, useState } from 'react';
 import { type Course } from '../types/Course';
 import { getCourses } from '../api/api';
@@ -10,13 +11,15 @@ import './HomePage.css';
 import awsIcon from '../assets/images/aws-icon.png';
 import azureIcon from '../assets/images/azure-icon.png';
 import googleIcon from '../assets/images/google-icon.png';
-import type { PaymentResult } from '../types/Payment';
+// [MODIFICACIÓN 1] Ahora importamos el tipo PaymentRequest también
+import type { PaymentResult, PaymentRequest } from '../types/Payment';
 
 // [ACTUALIZACIÓN] La interfaz de propiedades ahora también recibe la función onProcessPayment
 interface HomePageProps {
   onItemAddedToCart: (course: Course) => Promise<void>;
   userId: string | null;
-  onProcessPayment: (userId: string) => Promise<PaymentResult>;
+  // [MODIFICACIÓN 2] La prop onProcessPayment ahora acepta un objeto PaymentRequest completo.
+  onProcessPayment: (paymentRequest: PaymentRequest) => Promise<PaymentResult>;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onItemAddedToCart, userId, onProcessPayment }) => {

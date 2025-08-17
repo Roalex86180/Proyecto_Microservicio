@@ -1,6 +1,7 @@
 // src/api/api.ts
 import axios from 'axios';
 import { type Course } from '../types/Course';
+import { type PaymentRequest } from '../types/Payment';
 
 // Clave de suscripción principal que aplica a todos los servicios
 const API_SUBSCRIPTION_KEY = 'dc252096cbad43c192a0c399fa333f21'; 
@@ -77,7 +78,7 @@ export const getCartItems = async (userId: string) => {
   }
 };
 
-// [NUEVO] Función para crear un carrito si no existe
+// Función para crear un carrito si no existe
 export const createCart = async (userId: string) => {
   const requestOptions: RequestInit = {
     method: 'POST',
@@ -158,25 +159,16 @@ export const register = async (username: string, password: string, email: string
 };
 
 
-
 const PAYMENT_API_URL = 'https://miapimanagement1.azure-api.net/payment/payment';
 
-// [CAMBIO] La función ahora recibe un courseId opcional
-export const processPayment = async (userId: string, courseId?: string) => {
-  // [CAMBIO] Se crea un cuerpo de solicitud que puede incluir el courseId
-  const requestBody: { userId: string; courseId?: string } = { userId };
-  if (courseId) {
-    requestBody.courseId = courseId;
-  }
-
+export const processPayment = async (paymentRequest: PaymentRequest) => {
   const requestOptions: RequestInit = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY,
     },
-    // [CAMBIO] Se envía el nuevo cuerpo de la solicitud
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(paymentRequest),
   };
 
   try {
@@ -191,6 +183,34 @@ export const processPayment = async (userId: string, courseId?: string) => {
     return result;
   } catch (error) {
     console.error('Error al procesar el pago:', error);
+    throw error;
+  }
+};
+
+// [MODIFICACIÓN] Nueva URL para el servicio de reseñas
+const REVIEWS_API_URL = 'https://miapimanagement1.azure-api.net/reviews';
+
+// [MODIFICACIÓN] Función para obtener los cursos comprados por el usuario
+// Ahora llama al endpoint correcto en la API de reseñas
+export const getPurchasedCourses = async (userId: string): Promise<Course[]> => {
+  const requestOptions: RequestInit = {
+    method: 'GET',
+    headers: {
+      'Ocp-Apim-Subscription-Key': API_SUBSCRIPTION_KEY,
+    },
+  };
+
+  try {
+    const response = await fetch(`${REVIEWS_API_URL}/user/${userId}/courses`, requestOptions);
+    if (!response.ok) {
+      const error = new Error(`Error: ${response.status} ${response.statusText}`);
+      (error as any).status = response.status;
+      throw error;
+    }
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error al obtener los cursos comprados:', error);
     throw error;
   }
 };
