@@ -50,6 +50,9 @@ jobs:
 
     - name: Deploy to AKS
       run: |
+        # Aplica primero el secret (solo se crea si no existe)
+        kubectl apply -f ./kubernetes/paymentservice-secrets.yaml
+        
         # Reemplaza el tag de la imagen en el YAML del despliegue con el SHA del commit.
         sed -i 's|${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:vR|${{ env.AZURE_ACR_NAME }}.azurecr.io/${{ env.SERVICE_NAME_LOWER }}:${{ github.sha }}|g' ./kubernetes/${{ env.SERVICE_NAME_LOWER }}-deployment.yaml
         

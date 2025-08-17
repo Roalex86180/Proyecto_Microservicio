@@ -137,8 +137,9 @@ namespace PaymentService.Functions
 
                     _logger.LogInformation($"Simulating payment for user '{paymentRequest.UserId}' with {cartItems.Count} items.");
 
-                    // CORRECCIÓN: Usamos el contenedor de compras en la base de datos del carrito
-                    var purchasesContainer = cartDatabase.GetContainer("Purchases"); // Contenedor para registrar las compras
+                    // CORRECCIÓN: Guardamos las compras en ReviewsDb (igual que el pago directo)
+                    var reviewsDatabase = _reviewsClient.GetDatabase("ReviewsDb");
+                    var purchasesContainer = reviewsDatabase.GetContainer("Reviews"); // Contenedor para registrar las compras
 
                     var purchaseBatch = purchasesContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
@@ -174,9 +175,9 @@ namespace PaymentService.Functions
                         return errorResponse;
                     }
 
-                    _logger.LogInformation($"Successfully recorded {cartItems.Count} new purchases for user '{paymentRequest.UserId}'.");
+                    _logger.LogInformation($"Successfully recorded {cartItems.Count} new purchases for user '{paymentRequest.UserId}' in ReviewsDb.");
 
-                    // CORRECCIÓN: Usamos un sgundo batch transaccional para limpiar el carrito
+                    // CORRECCIÓN: Usamos un segundo batch transaccional para limpiar el carrito
                     var cartBatch = cartContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
                     {
