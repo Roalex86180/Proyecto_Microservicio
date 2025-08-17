@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication() // ← CAMBIO: Usar ConfigureFunctionsWebApplication en lugar de ConfigureFunctionsWorkerDefaults
+    .ConfigureFunctionsWebApplication() // ← CAMBIO: Usar ConfigureFunctionsWebApplication n lugar de ConfigureFunctionsWorkerDefaults
     .ConfigureServices(services =>
     {
         services.AddApplicationInsightsTelemetryWorkerService();
