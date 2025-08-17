@@ -13,24 +13,24 @@ using Microsoft.Azure.Cosmos.Linq;
 using PaymentService.Models;
 using CartService.Models;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection; // Añadido para IServiceProvider
+using Microsoft.Extensions.DependencyInjection; 
 
 namespace PaymentService.Functions
 {
     public class ProcessPayment
     {
         private readonly ILogger<ProcessPayment> _logger;
-        // -- CAMBIO: Ahora tenemos dos clientes en lugar de uno --
+        // -- CAMBIO: Ahora usamos una fábrica para obtener los clientes --
         private readonly CosmosClient _reviewsClient;
         private readonly CosmosClient _cartClient;
 
-        // -- CAMBIO: El constructor inyecta el service provider --
-        public ProcessPayment(ILogger<ProcessPayment> logger, IServiceProvider serviceProvider)
+        // -- CAMBIO: El constructor inyecta la fábrica del cliente --
+        public ProcessPayment(ILogger<ProcessPayment> logger, Func<string, CosmosClient> clientFactory)
         {
             _logger = logger;
-            // -- CAMBIO: Obtenemos los clientes por su nombre --
-            _reviewsClient = serviceProvider.GetRequiredService<CosmosClient>("ReviewsDbClient");
-            _cartClient = serviceProvider.GetRequiredService<CosmosClient>("CartDbClient");
+            // -- CAMBIO: Obtenemos los clientes usando la fábrica --
+            _reviewsClient = clientFactory("ReviewsDbClient");
+            _cartClient = clientFactory("CartDbClient");
         }
 
         [Function("ProcessPayment")]
@@ -74,17 +74,13 @@ namespace PaymentService.Functions
 
             try
             {
-                // -- CAMBIO: Usamos el cliente correcto para cada base de datos --
                 var purchasesDatabase = _reviewsClient.GetDatabase("ReviewsDb");
                 var purchasesContainer = purchasesDatabase.GetContainer("Reviews");
-
-                // [MODIFICACIÓN] Lógica para procesar un solo curso, sin necesidad del carrito.
-                // La lógica del carrito (el bloque 'else') se mantiene sin cambios.
+                
                 if (!string.IsNullOrEmpty(paymentRequest.CourseId))
                 {
                     _logger.LogInformation($"Processing direct payment for course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
 
-                    // Verifica que la solicitud de pago directo incluya el nombre y precio del producto.
                     if (string.IsNullOrEmpty(paymentRequest.ProductName) || !paymentRequest.Price.HasValue)
                     {
                         var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
@@ -102,7 +98,6 @@ namespace PaymentService.Functions
                         PurchaseDate = DateTime.UtcNow
                     };
                     
-                    // Guarda la compra directamente en la base de datos de compras.
                     await purchasesContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
                     _logger.LogInformation($"Course '{purchaseRecord.ProductName}' permanently saved to UserPurchases for user '{purchaseRecord.UserId}'.");
                     
@@ -113,9 +108,8 @@ namespace PaymentService.Functions
                     });
                     return successResponse;
                 }
-                else // Lógica existente para procesar el carrito completo
+                else
                 {
-                    // -- CAMBIO: Usamos el cliente correcto para cada base de datos --
                     var cartDatabase = _cartClient.GetDatabase("CartDb");
                     var cartContainer = cartDatabase.GetContainer("Items");
 
