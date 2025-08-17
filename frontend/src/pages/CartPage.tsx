@@ -9,7 +9,7 @@ interface CartPageProps {
   userId: string | null;
   onProcessPayment: (userId: string) => Promise<PaymentResult>;
   paymentMessage: string | null;
-  // [NUEVO] Prop opcional para vaciar el carrito desde App
+  // Prop opcional para vaciar el carrito desde App
   onClearCart?: () => void;
 }
 
@@ -34,9 +34,9 @@ const CartPage: React.FC<CartPageProps> = ({
     setLoading(false);
   };
 
-  // [NUEVO] Si el pago fue exitoso, vacía carrito después de mostrar el mensaje
+  // Si el pago fue exitoso, vacía carrito después de mostrar el mensaje
   useEffect(() => {
-    if (paymentMessage && paymentMessage.includes('successfully')) {
+    if (paymentMessage && paymentMessage.includes('realizado con éxito')) {
       const timer = setTimeout(() => {
         if (onClearCart) {
           onClearCart(); // Vacía carrito desde el padre
