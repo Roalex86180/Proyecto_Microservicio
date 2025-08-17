@@ -156,13 +156,22 @@ namespace PaymentService.Functions
                     }
                     var purchaseBatchResponse = await purchaseBatch.ExecuteAsync();
 
+                    // [INICIO DEL CAMBIO] Lógica de logging detallado
                     if (!purchaseBatchResponse.IsSuccessStatusCode)
                     {
-                        _logger.LogError($"Transactional batch for UserPurchases failed with status code: {purchaseBatchResponse.StatusCode}");
+                        _logger.LogError($"Transactional batch for UserPurchases failed with status code: {purchaseBatchResponse.StatusCode}. Error message: {purchaseBatchResponse.ErrorMessage}");
+                        foreach (var operation in purchaseBatchResponse)
+                        {
+                            if (!operation.IsSuccessStatusCode)
+                            {
+                                _logger.LogError($"Operation failed with status code: {operation.StatusCode}. Error message: {operation.ErrorMessage}");
+                            }
+                        }
                         var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
                         await errorResponse.WriteStringAsync("Payment processed, but failed to record purchases. Please contact support.");
                         return errorResponse;
                     }
+                    // [FIN DEL CAMBIO]
 
                     _logger.LogInformation($"Successfully recorded {cartItems.Count} new purchases for user '{paymentRequest.UserId}'.");
 
