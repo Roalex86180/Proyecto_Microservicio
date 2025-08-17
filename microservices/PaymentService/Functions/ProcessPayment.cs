@@ -13,18 +13,24 @@ using Microsoft.Azure.Cosmos.Linq;
 using PaymentService.Models;
 using CartService.Models;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection; // Añadido para IServiceProvider
 
 namespace PaymentService.Functions
 {
     public class ProcessPayment
     {
         private readonly ILogger<ProcessPayment> _logger;
-        private readonly CosmosClient _cosmosClient;
+        // -- CAMBIO: Ahora tenemos dos clientes en lugar de uno --
+        private readonly CosmosClient _reviewsClient;
+        private readonly CosmosClient _cartClient;
 
-        public ProcessPayment(ILogger<ProcessPayment> logger, CosmosClient cosmosClient)
+        // -- CAMBIO: El constructor inyecta el service provider --
+        public ProcessPayment(ILogger<ProcessPayment> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _cosmosClient = cosmosClient;
+            // -- CAMBIO: Obtenemos los clientes por su nombre --
+            _reviewsClient = serviceProvider.GetRequiredService<CosmosClient>("ReviewsDbClient");
+            _cartClient = serviceProvider.GetRequiredService<CosmosClient>("CartDbClient");
         }
 
         [Function("ProcessPayment")]
@@ -68,7 +74,8 @@ namespace PaymentService.Functions
 
             try
             {
-                var purchasesDatabase = _cosmosClient.GetDatabase("ReviewsDb");
+                // -- CAMBIO: Usamos el cliente correcto para cada base de datos --
+                var purchasesDatabase = _reviewsClient.GetDatabase("ReviewsDb");
                 var purchasesContainer = purchasesDatabase.GetContainer("Reviews");
 
                 // [MODIFICACIÓN] Lógica para procesar un solo curso, sin necesidad del carrito.
@@ -108,7 +115,8 @@ namespace PaymentService.Functions
                 }
                 else // Lógica existente para procesar el carrito completo
                 {
-                    var cartDatabase = _cosmosClient.GetDatabase("CartDb");
+                    // -- CAMBIO: Usamos el cliente correcto para cada base de datos --
+                    var cartDatabase = _cartClient.GetDatabase("CartDb");
                     var cartContainer = cartDatabase.GetContainer("Items");
 
                     _logger.LogInformation($"Searching for cart items for UserId: {paymentRequest.UserId}");

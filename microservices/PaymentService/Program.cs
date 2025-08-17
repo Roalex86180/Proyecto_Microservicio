@@ -20,16 +20,24 @@ builder.ConfigureAppConfiguration(config =>
 // Añadimos el registro de servicios
 builder.ConfigureServices((context, services) =>
 {
-    // Obtenemos la cadena de conexión de la configuración
-    var cosmosDbConnectionString = context.Configuration["CosmosDb:ConnectionString"];
-    
-    if (string.IsNullOrEmpty(cosmosDbConnectionString))
+    // Obtenemos las cadenas de conexión de la configuración para cada cuenta
+    var reviewsDbConnectionString = context.Configuration["ReviewsDbConnectionString"];
+    var cartDbConnectionString = context.Configuration["CartDbConnectionString"];
+
+    if (string.IsNullOrEmpty(reviewsDbConnectionString))
     {
-        throw new InvalidOperationException("CosmosDb:ConnectionString variable not set.");
+        throw new InvalidOperationException("ReviewsDbConnectionString variable not set.");
+    }
+
+    if (string.IsNullOrEmpty(cartDbConnectionString))
+    {
+        throw new InvalidOperationException("CartDbConnectionString variable not set.");
     }
     
-    // Registramos CosmosClient como un singleton
-    services.AddSingleton(new CosmosClient(cosmosDbConnectionString));
+    // Registramos dos instancias de CosmosClient como singletons
+    // Se registran como servicios con clave para poder inyectarlos por separado
+    services.AddSingleton("ReviewsDbClient", new CosmosClient(reviewsDbConnectionString));
+    services.AddSingleton("CartDbClient", new CosmosClient(cartDbConnectionString));
 
     services.AddApplicationInsightsTelemetryWorkerService();
     services.ConfigureFunctionsApplicationInsights();
