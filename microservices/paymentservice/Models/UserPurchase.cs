@@ -1,28 +1,29 @@
 // src/PaymentService/Models/UserPurchase.cs
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace PaymentService.Models
 {
     public class UserPurchase
     {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
+        // [CORRECCIÓN] Agregamos el modificador 'required'
+        [JsonProperty("id")]
+        public required string Id { get; set; }
 
-        [JsonPropertyName("userId")]
-        public string UserId { get; set; }
-        
-        [JsonPropertyName("productId")]
-        public string ProductId { get; set; }
-        
-        [JsonPropertyName("productName")]
-        public string ProductName { get; set; }
-        
-        [JsonPropertyName("price")]
+        [JsonProperty("userId")]
+        public required string UserId { get; set; }
+
+        [JsonProperty("productId")]
+        public required string ProductId { get; set; }
+
+        [JsonProperty("productName")]
+        public required string ProductName { get; set; }
+
+        [JsonProperty("price")]
         public decimal Price { get; set; }
 
-        [JsonPropertyName("purchaseDate")]
+        [JsonProperty("purchaseDate")]
         public DateTime PurchaseDate { get; set; }
     }
 }
