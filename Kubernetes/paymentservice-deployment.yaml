@@ -20,7 +20,7 @@ spec:
       - name: acr-secret
       containers:
         - name: paymentservice
-          image: Containermicroservicio.azurecr.io/paymentservice:vR
+          image: Containermicroservicio.azurecr.io/paymentservice:vR # <-- Asegúrate de usar un nuevo tag aquí (ej. v1, v2, v3)
           ports:
             - containerPort: 80
           env:
@@ -31,3 +31,7 @@ spec:
                 secretKeyRef:
                   name: paymentservice-secrets
                   key: CosmosDbConnectionString
+            - name: CosmosDb__DatabaseName
+              value: "ReviewsDb"
+            - name: CosmosDb__ContainerName
+              value: "Reviews" 

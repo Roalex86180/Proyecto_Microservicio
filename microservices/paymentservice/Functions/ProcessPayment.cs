@@ -68,8 +68,8 @@ namespace PaymentService.Functions
 
             try
             {
-                var purchasesDatabase = _cosmosClient.GetDatabase("PurchasesDb");
-                var purchasesContainer = purchasesDatabase.GetContainer("UserPurchases");
+                var purchasesDatabase = _cosmosClient.GetDatabase("ReviewsDb");
+                var purchasesContainer = purchasesDatabase.GetContainer("Reviews");
 
                 // [MODIFICACIÓN] Lógica para procesar un solo curso, sin necesidad del carrito.
                 // La lógica del carrito (el bloque 'else') se mantiene sin cambios.
