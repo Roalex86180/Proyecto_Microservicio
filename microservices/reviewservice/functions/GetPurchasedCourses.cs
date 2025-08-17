@@ -42,8 +42,8 @@ namespace ReviewService.Functions
             try
             {
                 // 1. Obtener IDs de los cursos comprados desde la base de datos de reseñas (SQL API)
-                var reviewsDb = _cosmosClient.GetDatabase("AuthDb");
-                var purchasesContainer = reviewsDb.GetContainer("Users");
+                var reviewsDb = _cosmosClient.GetDatabase("ReviewsDb");
+                var purchasesContainer = reviewsDb.GetContainer("Reviews");
 
                 var query = purchasesContainer.GetItemQueryIterator<PurchasedCourse>(
                     new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
