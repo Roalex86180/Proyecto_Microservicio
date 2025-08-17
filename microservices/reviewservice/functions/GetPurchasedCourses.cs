@@ -42,7 +42,7 @@ namespace ReviewService.Functions
             try
             {
                 // 1. Obtener IDs de los cursos comprados desde la base de datos de reseñas (SQL API)
-                var reviewsDb = _cosmosClient.GetDatabase("ReviewDb");
+                var reviewsDb = _cosmosClient.GetDatabase("AuthDb");
                 var purchasesContainer = reviewsDb.GetContainer("Purchases");
 
                 var query = purchasesContainer.GetItemQueryIterator<PurchasedCourse>(
