@@ -13,22 +13,19 @@ using Microsoft.Azure.Cosmos.Linq;
 using PaymentService.Models;
 using CartService.Models;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection; 
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PaymentService.Functions
 {
     public class ProcessPayment
     {
         private readonly ILogger<ProcessPayment> _logger;
-        // -- CAMBIO: Ahora usamos una fábrica para obtener los clientes --
         private readonly CosmosClient _reviewsClient;
         private readonly CosmosClient _cartClient;
 
-        // -- CAMBIO: El constructor inyecta la fábrica del cliente --
         public ProcessPayment(ILogger<ProcessPayment> logger, Func<string, CosmosClient> clientFactory)
         {
             _logger = logger;
-            // -- CAMBIO: Obtenemos los clientes usando la fábrica --
             _reviewsClient = clientFactory("ReviewsDbClient");
             _cartClient = clientFactory("CartDbClient");
         }
@@ -74,9 +71,10 @@ namespace PaymentService.Functions
 
             try
             {
-                var purchasesDatabase = _reviewsClient.GetDatabase("ReviewsDb");
-                var purchasesContainer = purchasesDatabase.GetContainer("Reviews");
-                
+                // Obtenemos la base de datos y el contenedor de compras del cliente correcto
+                var reviewsDatabase = _reviewsClient.GetDatabase("ReviewsDb");
+                var purchasesContainer = reviewsDatabase.GetContainer("Reviews");
+
                 if (!string.IsNullOrEmpty(paymentRequest.CourseId))
                 {
                     _logger.LogInformation($"Processing direct payment for course '{paymentRequest.CourseId}' for user '{paymentRequest.UserId}'.");
@@ -87,7 +85,7 @@ namespace PaymentService.Functions
                         await errorResponse.WriteStringAsync("For a direct payment, ProductName and Price are required in the request body.");
                         return errorResponse;
                     }
-                    
+
                     var purchaseRecord = new UserPurchase
                     {
                         Id = Guid.NewGuid().ToString(),
@@ -97,10 +95,10 @@ namespace PaymentService.Functions
                         Price = paymentRequest.Price.Value,
                         PurchaseDate = DateTime.UtcNow
                     };
-                    
+
                     await purchasesContainer.CreateItemAsync(purchaseRecord, new PartitionKey(purchaseRecord.UserId));
                     _logger.LogInformation($"Course '{purchaseRecord.ProductName}' permanently saved to UserPurchases for user '{purchaseRecord.UserId}'.");
-                    
+
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
                     await successResponse.WriteAsJsonAsync(new
                     {
@@ -117,7 +115,7 @@ namespace PaymentService.Functions
 
                     var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
                         .WithParameter("@userId", paymentRequest.UserId);
-                    
+
                     var cartItems = new List<CartItem>();
                     using (var feedIterator = cartContainer.GetItemQueryIterator<CartItem>(queryDefinition, requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(paymentRequest.UserId) }))
                     {
@@ -134,9 +132,10 @@ namespace PaymentService.Functions
                         await response.WriteStringAsync($"Cart for user '{paymentRequest.UserId}' is empty. No payment to process.");
                         return response;
                     }
-                    
-                    _logger.LogInformation($"Simulating payment for user '{paymentRequest.UserId}' with {cartItems.Count} items.");
-                    
+
+                    _logger.LogInformation($"Simulating payment for user 'Alex' with {cartItems.Count} items.");
+
+                    // CORRECCIÓN: Usamos el contenedor de compras obtenido del cliente correcto
                     var purchaseBatch = purchasesContainer.CreateTransactionalBatch(new PartitionKey(paymentRequest.UserId));
                     foreach (var item in cartItems)
                     {
@@ -156,7 +155,7 @@ namespace PaymentService.Functions
                     if (!purchaseBatchResponse.IsSuccessStatusCode)
                     {
                         _logger.LogError($"Transactional batch for UserPurchases failed with status code: {purchaseBatchResponse.StatusCode}.");
-                        
+
                         for (int i = 0; i < purchaseBatchResponse.Count; i++)
                         {
                             var operation = purchaseBatchResponse.GetOperationResultAtIndex<UserPurchase>(i);
@@ -165,7 +164,7 @@ namespace PaymentService.Functions
                                 _logger.LogError($"Operation at index {i} failed with status code: {operation.StatusCode}.");
                             }
                         }
-                        
+
                         var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
                         await errorResponse.WriteStringAsync("Payment processed, but failed to record purchases. Please contact support.");
                         return errorResponse;
@@ -187,7 +186,7 @@ namespace PaymentService.Functions
                         await errorResponse.WriteStringAsync("Payment processed, but failed to clear cart. Please contact support.");
                         return errorResponse;
                     }
-                    
+
                     _logger.LogInformation($"Successfully processed payment and cleared cart for user '{paymentRequest.UserId}'.");
 
                     var successResponse = req.CreateResponse(HttpStatusCode.OK);
