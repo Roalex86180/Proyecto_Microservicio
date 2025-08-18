@@ -25,7 +25,7 @@ namespace ReviewService.Functions
 
         [Function("ListVideoReviews")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "videoreviews")] HttpRequestData req)
         {
             _logger.LogInformation("Request received to list all video reviews.");
 

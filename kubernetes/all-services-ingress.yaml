@@ -72,6 +72,15 @@ spec:
             name: reviewservice-service
             port:
               number: 80
+
+      - path: /api/video-reviews*
+        pathType: Prefix
+        backend:
+          service:
+            name: reviewservice-service
+            port:
+              number: 80
+
       # [NUEVO] Agregada la regla para la ruta /api/user/{userId}/courses
       - path: /api/user*
         pathType: Prefix
